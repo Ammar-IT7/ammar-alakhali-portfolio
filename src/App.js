@@ -32,7 +32,7 @@ function App() {
   return (
     <ThemeProvider theme={theme === 'light' ? lightTheme : darkTheme}>
       <GlobalStyles />
-      <Router>
+      <Router basename="/ammar-alakhali-portfolio">
         <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
         <Container>
           <Routes>
