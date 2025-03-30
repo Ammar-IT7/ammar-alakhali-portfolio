@@ -1,9 +1,11 @@
+// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { lightTheme, darkTheme } from './styles/Themes';
-import { useState } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { LanguageProvider, LanguageContext } from './contexts/LanguageContext';
 
 // Pages
 import Home from './pages/Home';
@@ -22,15 +24,36 @@ const Container = styled.div`
   padding: 0 2rem;
 `;
 
-function App() {
-  const [theme, setTheme] = useState('dark');
+// Wrapper component to access language context
+function AppContent() {
+  const { language } = useContext(LanguageContext);
+  const [theme, setTheme] = useState(() => 
+    localStorage.getItem('theme') || 'dark'
+  );
   
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+  
+  useEffect(() => {
+    // Apply theme class to body for additional styling opportunities
+    document.body.className = theme;
+    
+    // Set the dir attribute based on language
+    const isRTL = language === 'ar';
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  }, [theme, language]);
+
+  // Create theme with current RTL state
+  const currentTheme = {
+    ...(theme === 'light' ? lightTheme : darkTheme),
+    isRTL: language === 'ar'
   };
 
   return (
-    <ThemeProvider theme={theme === 'light' ? lightTheme : darkTheme}>
+    <ThemeProvider theme={currentTheme}>
       <GlobalStyles />
       <Router basename="/ammar-alakhali-portfolio">
         <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
@@ -46,6 +69,14 @@ function App() {
         <Footer />
       </Router>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 

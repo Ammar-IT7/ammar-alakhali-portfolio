@@ -1,118 +1,96 @@
 // src/components/sections/ContactSection.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
+import { FaEnvelope, FaMapMarkerAlt, FaPhone, FaPaperPlane } from 'react-icons/fa';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 const ContactContainer = styled.section`
-  padding: 6rem 0;
-  background-color: ${({ theme }) => theme.backgroundAlt};
-`;
-
-const ContactContent = styled.div`
+  padding: 4rem 0;
   width: 90%;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const SectionTitle = styled(motion.h2)`
-  text-align: center;
-  margin-bottom: 1rem;
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 4px;
-    background-color: ${({ theme }) => theme.primary};
-    border-radius: 2px;
-  }
-`;
-
-const SectionSubtitle = styled(motion.p)`
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto 3rem auto;
-  color: ${({ theme }) => theme.textAlt};
 `;
 
 const ContactGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  width: 100%;
+  gap: 4rem;
   
   @media (max-width: 992px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const ContactInfo = styled(motion.div)`
+const ContactInfo = styled.div`
   display: flex;
   flex-direction: column;
+  text-align: ${props => props.isRTL ? 'right' : 'left'};
 `;
 
-const ContactHeading = styled.h3`
+const ContactTitle = styled.h3`
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
+  color: ${({ theme }) => theme.primary};
 `;
 
-const ContactText = styled.p`
-  margin-bottom: 2rem;
+const ContactDescription = styled.p`
+  margin-bottom: 2.5rem;
+  font-size: 1.1rem;
+  line-height: 1.8;
   color: ${({ theme }) => theme.textAlt};
 `;
 
-const ContactDetails = styled.div`
+const ContactMethods = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   margin-bottom: 2rem;
 `;
 
-const ContactItem = styled.div`
+const ContactMethod = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-direction: ${props => props.isRTL ? 'row-reverse' : 'row'};
 `;
 
-const ContactIcon = styled.div`
+const IconContainer = styled.div`
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: ${({ theme }) => theme.primary}22;
-  color: ${({ theme }) => theme.primary};
+  background-color: ${({ theme }) => theme.backgroundAlt};
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   font-size: 1.2rem;
+  color: ${({ theme }) => theme.primary};
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.primary};
+    color: white;
+    transform: scale(1.1);
+  }
 `;
 
-const ContactItemContent = styled.div`
-  display: flex;
-  flex-direction: column;
+const ContactMethodInfo = styled.div`
+  flex: 1;
 `;
 
-const ContactItemTitle = styled.h4`
+const ContactMethodTitle = styled.h4`
   font-size: 1.1rem;
   margin-bottom: 0.3rem;
 `;
 
-const ContactItemValue = styled.p`
+const ContactMethodValue = styled.p`
   color: ${({ theme }) => theme.textAlt};
 `;
 
 const ContactForm = styled(motion.form)`
-  background-color: ${({ theme }) => theme.background};
-  padding: 2rem;
-  border-radius: 8px;
+  background-color: ${({ theme }) => theme.backgroundAlt};
+  padding: 2.5rem;
+  border-radius: 15px;
   box-shadow: ${({ theme }) => theme.shadow};
 `;
 
@@ -124,54 +102,80 @@ const FormLabel = styled.label`
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  text-align: ${props => props.isRTL ? 'right' : 'left'};
 `;
 
 const FormInput = styled.input`
   width: 100%;
-  padding: 0.8rem 1rem;
+  padding: 1rem;
   border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 4px;
-  background-color: ${({ theme }) => theme.backgroundAlt};
+  border-radius: 5px;
+  background-color: ${({ theme }) => theme.background};
   color: ${({ theme }) => theme.text};
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
   
   &:focus {
-    outline: none;
     border-color: ${({ theme }) => theme.primary};
+    outline: none;
   }
 `;
 
 const FormTextarea = styled.textarea`
   width: 100%;
-  padding: 0.8rem 1rem;
+  padding: 1rem;
   border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 4px;
-  background-color: ${({ theme }) => theme.backgroundAlt};
+  border-radius: 5px;
+  background-color: ${({ theme }) => theme.background};
   color: ${({ theme }) => theme.text};
-  resize: vertical;
+  font-size: 1rem;
   min-height: 150px;
+  resize: vertical;
+  transition: border-color 0.3s ease;
   
   &:focus {
-    outline: none;
     border-color: ${({ theme }) => theme.primary};
+    outline: none;
   }
 `;
 
 const SubmitButton = styled(motion.button)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   padding: 1rem 2rem;
   background-color: ${({ theme }) => theme.primary};
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   font-size: 1rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   transition: background-color 0.3s ease;
+  font-weight: 500;
+  width: 100%;
   
   &:hover {
     background-color: ${({ theme }) => theme.secondary};
   }
+  
+  &:disabled {
+    background-color: ${({ theme }) => theme.textAlt};
+    cursor: not-allowed;
+  }
+`;
+
+const Alert = styled(motion.div)`
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  background-color: ${({ success, theme }) => 
+    success ? 'rgba(72, 187, 120, 0.2)' : 'rgba(245, 101, 101, 0.2)'};
+  color: ${({ success, theme }) => 
+    success ? '#48bb78' : '#f56565'};
+  border: 1px solid ${({ success }) => 
+    success ? '#48bb78' : '#f56565'};
 `;
 
 const ContactSection = () => {
@@ -181,162 +185,164 @@ const ContactSection = () => {
     subject: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
   
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
+  const { language, t } = useContext(LanguageContext);
+  const isRTL = language === 'ar';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would add code to handle form submission
-    console.log(formData);
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    });
-    alert("Thank you for your message! I'll get back to you soon.");
+    setIsSubmitting(true);
+    
+    // Simulate form submission
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSubmitStatus('success');
+      
+      // Reset form after successful submission
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus(null);
+      }, 5000);
+    }, 1500);
   };
 
   return (
-    <ContactContainer id="contact" ref={ref}>
-      <ContactContent>
-        <SectionTitle
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          Get In Touch
-        </SectionTitle>
-        
-        <SectionSubtitle
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Have a question or want to work together? Feel free to contact me.
-        </SectionSubtitle>
-        
-        <ContactGrid>
-          <ContactInfo
-            initial={{ opacity: 0, x: -30 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <ContactHeading>Let's discuss your project</ContactHeading>
-            <ContactText>
-              Whether you're interested in a collaboration, have a question about my work, 
-              or just want to say hello, I'd love to hear from you. Drop me a message and 
-              I'll get back to you as soon as possible.
-            </ContactText>
-            
-            <ContactDetails>
-              <ContactItem>
-                <ContactIcon>
-                  <FaEnvelope />
-                </ContactIcon>
-                <ContactItemContent>
-                  <ContactItemTitle>Email</ContactItemTitle>
-                  <ContactItemValue>contact@ammaralakhali.com</ContactItemValue>
-                </ContactItemContent>
-              </ContactItem>
-              
-              <ContactItem>
-                <ContactIcon>
-                  <FaPhone />
-                </ContactIcon>
-                <ContactItemContent>
-                  <ContactItemTitle>Phone</ContactItemTitle>
-                  <ContactItemValue>+1 (123) 456-7890</ContactItemValue>
-                </ContactItemContent>
-              </ContactItem>
-              
-              <ContactItem>
-                <ContactIcon>
-                  <FaMapMarkerAlt />
-                </ContactIcon>
-                <ContactItemContent>
-                  <ContactItemTitle>Location</ContactItemTitle>
-                  <ContactItemValue>San Francisco, CA</ContactItemValue>
-                </ContactItemContent>
-              </ContactItem>
-            </ContactDetails>
-          </ContactInfo>
+    <ContactContainer>
+      <ContactGrid>
+        <ContactInfo isRTL={isRTL}>
+          <ContactTitle>{t('contact.title')}</ContactTitle>
+          <ContactDescription>
+            {t('contact.description')}
+          </ContactDescription>
           
-          <ContactForm
-            initial={{ opacity: 0, x: 30 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            onSubmit={handleSubmit}
-          >
-            <FormGroup>
-              <FormLabel htmlFor="name">Your Name</FormLabel>
-              <FormInput 
-                type="text" 
-                id="name" 
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
+          <ContactMethods>
+            <ContactMethod isRTL={isRTL}>
+              <IconContainer>
+                <FaEnvelope />
+              </IconContainer>
+              <ContactMethodInfo>
+                <ContactMethodTitle>Email</ContactMethodTitle>
+                <ContactMethodValue>contact@ammaralakhali.com</ContactMethodValue>
+              </ContactMethodInfo>
+            </ContactMethod>
             
-            <FormGroup>
-              <FormLabel htmlFor="email">Your Email</FormLabel>
-              <FormInput 
-                type="email" 
-                id="email" 
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
+            <ContactMethod isRTL={isRTL}>
+              <IconContainer>
+                <FaMapMarkerAlt />
+              </IconContainer>
+              <ContactMethodInfo>
+                <ContactMethodTitle>Location</ContactMethodTitle>
+                <ContactMethodValue>San Francisco, CA</ContactMethodValue>
+              </ContactMethodInfo>
+            </ContactMethod>
             
-            <FormGroup>
-              <FormLabel htmlFor="subject">Subject</FormLabel>
-              <FormInput 
-                type="text" 
-                id="subject" 
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <FormLabel htmlFor="message">Your Message</FormLabel>
-              <FormTextarea 
-                id="message" 
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
-            
-            <SubmitButton 
-              type="submit"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <ContactMethod isRTL={isRTL}>
+              <IconContainer>
+                <FaPhone />
+              </IconContainer>
+              <ContactMethodInfo>
+                <ContactMethodTitle>Phone</ContactMethodTitle>
+                <ContactMethodValue>+1 (123) 456-7890</ContactMethodValue>
+              </ContactMethodInfo>
+            </ContactMethod>
+          </ContactMethods>
+        </ContactInfo>
+        
+        <ContactForm
+          initial={{ opacity: 0, x: isRTL ? -50 : 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          onSubmit={handleSubmit}
+        >
+          {submitStatus && (
+            <Alert 
+              success={submitStatus === 'success'}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
             >
-              Send Message <FaPaperPlane />
-            </SubmitButton>
-          </ContactForm>
-        </ContactGrid>
-      </ContactContent>
+              {submitStatus === 'success' 
+                ? t('contact.success') 
+                : t('contact.error')}
+            </Alert>
+          )}
+          
+          <FormGroup>
+            <FormLabel htmlFor="name" isRTL={isRTL}>{t('contact.nameLabel')}</FormLabel>
+            <FormInput
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              dir={isRTL ? 'rtl' : 'ltr'}
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormLabel htmlFor="email" isRTL={isRTL}>{t('contact.emailLabel')}</FormLabel>
+            <FormInput
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              dir={isRTL ? 'rtl' : 'ltr'}
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormLabel htmlFor="subject" isRTL={isRTL}>{t('contact.subjectLabel')}</FormLabel>
+            <FormInput
+              type="text"
+              id="subject"
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              required
+              dir={isRTL ? 'rtl' : 'ltr'}
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormLabel htmlFor="message" isRTL={isRTL}>{t('contact.messageLabel')}</FormLabel>
+            <FormTextarea
+              id="message"
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              required
+              dir={isRTL ? 'rtl' : 'ltr'}
+            />
+          </FormGroup>
+          
+          <SubmitButton
+            type="submit"
+            disabled={isSubmitting}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {isSubmitting ? 'Sending...' : t('contact.sendButton')}
+            <FaPaperPlane />
+          </SubmitButton>
+        </ContactForm>
+      </ContactGrid>
     </ContactContainer>
   );
 };

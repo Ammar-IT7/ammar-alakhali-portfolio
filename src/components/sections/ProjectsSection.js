@@ -1,112 +1,305 @@
 // src/components/sections/ProjectsSection.js
-import React, { useState } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { FaGithub, FaExternalLinkAlt, FaReact, FaNodeJs, FaDatabase } from 'react-icons/fa';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { FaGithub, FaExternalLinkAlt, FaSearch, FaTimes } from 'react-icons/fa';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import projects from '../../data/projects';
+
+// Custom hook for intersection observer animations
+const useScrollAnimation = (options = {}) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.2, ...options });
+  return [ref, isInView];
+};
 
 const ProjectsContainer = styled.section`
   padding: 6rem 0;
-`;
-
-const ProjectsContent = styled.div`
   width: 90%;
   max-width: 1400px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: relative;
+  overflow: hidden;
+`;
+
+const GradientDecoration = styled.div`
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  z-index: -1;
+  
+  &.top-right {
+    background: ${({ theme }) => theme.primary};
+    width: 400px;
+    height: 400px;
+    top: -100px;
+    right: -100px;
+  }
+  
+  &.bottom-left {
+    background: ${({ theme }) => theme.secondary || '#6c5ce7'};
+    width: 300px;
+    height: 300px;
+    bottom: -50px;
+    left: -50px;
+  }
+`;
+
+const SectionHeader = styled.div`
+  text-align: center;
+  margin-bottom: 4rem;
+  position: relative;
 `;
 
 const SectionTitle = styled(motion.h2)`
-  text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  color: ${({ theme }) => theme.primary};
+  font-size: 2.5rem;
+  font-weight: 700;
   position: relative;
+  display: inline-block;
   
   &::after {
     content: '';
     position: absolute;
-    bottom: -0.5rem;
+    bottom: -8px;
     left: 50%;
     transform: translateX(-50%);
-    width: 80px;
+    width: 60px;
     height: 4px;
-    background-color: ${({ theme }) => theme.primary};
+    background: ${({ theme }) => theme.primary};
     border-radius: 2px;
   }
 `;
 
-const SectionSubtitle = styled(motion.p)`
-  text-align: center;
-  max-width: 600px;
+const SectionDescription = styled(motion.p)`
+  max-width: 700px;
   margin: 0 auto 2rem auto;
   color: ${({ theme }) => theme.textAlt};
+  font-size: 1.1rem;
+  line-height: 1.6;
 `;
 
-const ProjectFilters = styled(motion.div)`
+const FilterContainer = styled(motion.div)`
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 3rem;
+  position: relative;
+  padding-bottom: 10px; /* Add padding for the indicator */
+`;
+
+const ActiveIndicator = styled(motion.div)`
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  background: ${({ theme }) => theme.primary};
+  border-radius: 3px;
 `;
 
 const FilterButton = styled(motion.button)`
-  padding: 0.5rem 1.5rem;
-  background-color: ${({ active, theme }) => active ? theme.primary : 'transparent'};
-  color: ${({ active, theme }) => active ? 'white' : theme.text};
-  border: 1px solid ${({ active, theme }) => active ? theme.primary : theme.border};
-  border-radius: 25px;
+  background-color: transparent;
+  color: ${({ active, theme }) => active ? theme.primary : theme.text};
+  border: none;
+  border-radius: 30px;
+  padding: 0.8rem 1.8rem;
+  font-size: 1rem;
+  font-weight: ${({ active }) => active ? '600' : '500'};
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: ${({ theme }) => theme.primary};
+    opacity: 0.1;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+    border-radius: 30px;
+  }
+  
+  &:hover::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  
+  &:focus {
+    outline: none;
+  }
+`;
+
+const SearchContainer = styled(motion.div)`
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto 4rem auto;
+`;
+
+const SearchInput = styled(motion.input)`
+  width: 100%;
+  padding: 1.2rem;
+  padding-${props => props.isRTL ? 'right' : 'left'}: 3.5rem;
+  border: 2px solid ${({ theme, focused }) => focused ? theme.primary : 'transparent'};
+  border-radius: 50px;
+  background-color: ${({ theme }) => theme.backgroundAlt};
+  color: ${({ theme }) => theme.text};
+  font-size: 1rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  top: 50%;
+  ${props => props.isRTL ? 'right' : 'left'}: 1.2rem;
+  transform: translateY(-50%);
+  color: ${({ theme }) => theme.textAlt};
+  transition: color 0.3s ease;
+  
+  ${SearchContainer}:focus-within & {
+    color: ${({ theme }) => theme.primary};
+  }
+`;
+
+const ClearButton = styled(motion.button)`
+  position: absolute;
+  top: 50%;
+  ${props => props.isRTL ? 'left' : 'right'}: 1.2rem;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.textAlt};
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   
   &:hover {
-    border-color: ${({ theme }) => theme.primary};
-    color: ${({ active, theme }) => active ? 'white' : theme.primary};
+    color: ${({ theme }) => theme.primary};
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  &:focus {
+    outline: none;
   }
 `;
 
 const ProjectsGrid = styled(motion.div)`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
-  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2.5rem;
   
-  @media (max-width: 400px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
   }
 `;
 
 const ProjectCard = styled(motion.div)`
   background-color: ${({ theme }) => theme.backgroundAlt};
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadow};
-  transition: transform 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 2px; 
+    background: linear-gradient(
+      to bottom right, 
+      ${({ theme }) => theme.primary}, 
+      transparent
+    ); 
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  &:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.13);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
 `;
 
-const ProjectImage = styled.div`
-  width: 100%;
-  height: 200px;
-  background-color: ${({ theme }) => theme.primary}; // Placeholder for actual image
+const ProjectImageContainer = styled.div`
   position: relative;
   overflow: hidden;
+  height: 220px;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 70%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+  }
+  
+  ${ProjectCard}:hover &::after {
+    opacity: 0.7;
+  }
 `;
 
-const ImageOverlay = styled(motion.div)`
+const ProjectImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+  
+  ${ProjectCard}:hover & {
+    transform: scale(1.1);
+  }
+`;
+
+const ImageOverlay = styled.div`
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  z-index: 1;
   opacity: 0;
   transition: opacity 0.3s ease;
   
@@ -115,293 +308,516 @@ const ImageOverlay = styled(motion.div)`
   }
 `;
 
-const ProjectLink = styled.a`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: ${({ theme }) => theme.primary};
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
-`;
-
 const ProjectContent = styled.div`
-  padding: 1.5rem;
-  flex: 1;
+  padding: 1.8rem;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  text-align: ${props => props.isRTL ? 'right' : 'left'};
+`;
+
+const ProjectCategory = styled.span`
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: ${({ theme }) => theme.primary};
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  align-self: ${props => props.isRTL ? 'flex-end' : 'flex-start'};
 `;
 
 const ProjectTitle = styled.h3`
-  font-size: 1.3rem;
-  margin-bottom: 0.8rem;
-  color: ${({ theme }) => theme.text};
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  font-weight: 700;
+  transition: color 0.3s ease;
+  
+  ${ProjectCard}:hover & {
+    color: ${({ theme }) => theme.primary};
+  }
 `;
 
 const ProjectDescription = styled.p`
   color: ${({ theme }) => theme.textAlt};
-  font-size: 0.95rem;
   margin-bottom: 1.5rem;
-  flex: 1;
+  flex-grow: 1;
+  line-height: 1.6;
 `;
 
-const TechStack = styled.div`
+const ProjectTech = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-top: auto;
+  gap: 0.7rem;
+  margin-bottom: 1.8rem;
+  justify-content: ${props => props.isRTL ? 'flex-end' : 'flex-start'};
 `;
 
-const TechTag = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.8rem;
+const TechItem = styled(motion.span)`
   background-color: ${({ theme }) => theme.background};
-  border-radius: 15px;
-  font-size: 0.8rem;
-  color: ${({ theme }) => theme.textAlt};
-`;
-
-const SeeMoreButton = styled(motion.button)`
-  padding: 0.8rem 2rem;
-  background-color: transparent;
-  color: ${({ theme }) => theme.primary};
-  border: 1px solid ${({ theme }) => theme.primary};
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 3rem;
+  color: ${({ theme }) => theme.text};
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
   transition: all 0.3s ease;
+  border: 1px solid transparent;
   
   &:hover {
-    background-color: ${({ theme }) => theme.primary};
-    color: white;
+    border-color: ${({ theme }) => theme.primary};
+    color: ${({ theme }) => theme.primary};
+    transform: translateY(-2px);
   }
 `;
 
-// Mock project data (replace with your actual projects)
-const projectsData = [
-  {
-    id: 1,
-    title: "E-Commerce Platform",
-    description: "A full-stack e-commerce platform with product management, shopping cart, and payment integration.",
-    image: "ecommerce.jpg",
-    tags: ["React", "Node.js", "MongoDB", "Redux"],
-    category: "full-stack",
-    github: "https://github.com/ammaralakhali/ecommerce-platform",
-    demo: "https://ecommerce-demo.ammaralakhali.com"
-  },
-  {
-    id: 2,
-    title: "Task Management App",
-    description: "A productivity application for managing tasks, projects and deadlines with team collaboration features.",
-    image: "task-app.jpg",
-    tags: ["React", "Firebase", "Material UI"],
-    category: "frontend",
-    github: "https://github.com/ammaralakhali/task-manager",
-    demo: "https://task-app.ammaralakhali.com"
-  },
-  {
-    id: 3,
-    title: "Weather Dashboard",
-    description: "Real-time weather forecast application with location-based services and interactive maps.",
-    image: "weather-app.jpg",
-    tags: ["JavaScript", "API Integration", "CSS3"],
-    category: "frontend",
-    github: "https://github.com/ammaralakhali/weather-dashboard",
-    demo: "https://weather.ammaralakhali.com"
-  },
-  {
-    id: 4,
-    title: "Content Management System",
-    description: "A custom CMS with user roles, content editing, and publishing workflows.",
-    image: "cms.jpg",
-    tags: ["Node.js", "Express", "MongoDB", "JWT"],
-    category: "backend",
-    github: "https://github.com/ammaralakhali/content-cms",
-    demo: "https://cms.ammaralakhali.com"
-  },
-  {
-    id: 5,
-    title: "Real-time Chat Application",
-    description: "A messaging application with real-time updates, user presence, and file sharing.",
-    image: "chat-app.jpg",
-    tags: ["React", "Socket.io", "Node.js", "MongoDB"],
-    category: "full-stack",
-    github: "https://github.com/ammaralakhali/real-time-chat",
-    demo: "https://chat.ammaralakhali.com"
-  },
-  {
-    id: 6,
-    title: "Personal Finance Tracker",
-    description: "An application to track expenses, income, and financial goals with visual analytics.",
-    image: "finance-app.jpg",
-    tags: ["React", "Chart.js", "Firebase"],
-    category: "frontend",
-    github: "https://github.com/ammaralakhali/finance-tracker",
-    demo: "https://finance.ammaralakhali.com"
+const ProjectLinks = styled.div`
+  display: flex;
+  gap: 1.2rem;
+  margin-top: auto;
+  justify-content: ${props => props.isRTL ? 'flex-end' : 'flex-start'};
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.8rem;
   }
-];
+`;
+
+const ProjectLink = styled(motion.a)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: all 0.3s ease;
+  
+  &.primary {
+    background-color: ${({ theme }) => theme.primary};
+    color: white;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+      z-index: -1;
+    }
+    
+    &:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      
+      &::before {
+        transform: translateX(0);
+      }
+    }
+  }
+  
+  &.secondary {
+    background-color: transparent;
+    color: ${({ theme }) => theme.text};
+    border: 1px solid ${({ theme }) => theme.border};
+    
+    &:hover {
+      border-color: ${({ theme }) => theme.primary};
+      color: ${({ theme }) => theme.primary};
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+  }
+  
+  svg {
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover svg {
+    transform: translateY(-2px);
+  }
+`;
+
+const EmptyResults = styled(motion.div)`
+  text-align: center;
+  padding: 4rem 2rem;
+  grid-column: 1 / -1;
+  color: ${({ theme }) => theme.textAlt};
+  background-color: ${({ theme }) => theme.backgroundAlt};
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+`;
+
+const EmptyIcon = styled(motion.div)`
+  width: 80px;
+  height: 80px;
+  background: ${({ theme }) => theme.background};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  
+  svg {
+    color: ${({ theme }) => theme.textAlt};
+    font-size: 2rem;
+  }
+`;
+
+const EmptyText = styled.h4`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+`;
+
+const EmptySuggestion = styled.p`
+  font-size: 1rem;
+`;
 
 const ProjectsSection = () => {
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [filteredProjects, setFilteredProjects] = useState(projectsData);
-  const [showAll, setShowAll] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const { language, t } = useContext(LanguageContext);
+  const isRTL = language === 'ar';
   
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const handleFilterChange = (category) => {
-    setActiveFilter(category);
+  // Filter button refs for indicator positioning
+  const filterRefs = useRef({});
+  const [activeIndicatorWidth, setActiveIndicatorWidth] = useState(0);
+  const [activeIndicatorLeft, setActiveIndicatorLeft] = useState(0);
+  
+  // Scroll animation refs
+  const [headerRef, headerInView] = useScrollAnimation();
+  const [filtersRef, filtersInView] = useScrollAnimation();
+  const [searchRef, searchInView] = useScrollAnimation();
+  
+  // Update active indicator position when filter changes or window resizes
+  useEffect(() => {
+    const updateIndicator = () => {
+      const activeButton = filterRefs.current[filter];
+      
+      if (activeButton) {
+        const { offsetWidth, offsetLeft } = activeButton;
+        setActiveIndicatorWidth(offsetWidth);
+        setActiveIndicatorLeft(offsetLeft);
+      }
+    };
     
-    if (category === "all") {
-      setFilteredProjects(projectsData);
-    } else {
-      setFilteredProjects(projectsData.filter(project => project.category === category));
+    updateIndicator();
+    
+    // Add resize listener to update indicator position on window resize
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [filter]);
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  
+  const clearSearch = () => {
+    setSearchTerm('');
+    // Focus on the search input after clearing
+    const searchInput = document.querySelector('input[type="text"]');
+    if (searchInput) {
+      searchInput.focus();
     }
   };
 
-  const displayedProjects = showAll ? filteredProjects : filteredProjects.slice(0, 3);
+  const filteredProjects = projects.filter(project => {
+    // Apply category filter
+    const categoryMatch = filter === 'all' || project.category === filter;
+    
+    // Apply search filter (case insensitive)
+    const searchLower = searchTerm.toLowerCase();
+    const searchMatch = !searchTerm || 
+      project.title.toLowerCase().includes(searchLower) ||
+      project.description.toLowerCase().includes(searchLower) ||
+      project.technologies.some(tech => 
+        tech.toLowerCase().includes(searchLower)
+      );
+    
+    return categoryMatch && searchMatch;
+  });
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { 
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        mass: 1
+      }
+    }
+  };
+  
+  const techItemVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        type: "spring",
+        stiffness: 300,
+        damping: 20
+      }
+    }
+  };
+  
+  const cardHoverVariants = {
+    hover: {
+      y: -12,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    }
+  };
 
   return (
-    <ProjectsContainer id="projects" ref={ref}>
-      <ProjectsContent>
+    <ProjectsContainer id="projects">
+      {/* Decorative elements */}
+      <GradientDecoration className="top-right" />
+      <GradientDecoration className="bottom-left" />
+      
+      <SectionHeader ref={headerRef}>
         <SectionTitle
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={headerInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ 
+            duration: 0.6, 
+            type: "spring",
+            stiffness: 100
+          }}
         >
-          My Projects
+          {t('projects.title')}
         </SectionTitle>
-        
-        <SectionSubtitle
+        <SectionDescription
           initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
+          animate={headerInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Here are some of my recent projects. Check out my GitHub for more.
-        </SectionSubtitle>
+          {t('projects.description')}
+        </SectionDescription>
+      </SectionHeader>
+
+      <FilterContainer 
+        ref={filtersRef}
+        initial={{ opacity: 0, y: 20 }}
+        animate={filtersInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5 }}
+      >
+            {['all', 'web', 'mobile', 'backend'].map((category) => (
+          <FilterButton 
+            key={category}
+            active={filter === category} 
+            onClick={() => handleFilterChange(category)}
+            ref={el => filterRefs.current[category] = el}
+            whileTap={{ scale: 0.95 }}
+            aria-pressed={filter === category}
+          >
+            {t(`projects.categories.${category}`) || category.charAt(0).toUpperCase() + category.slice(1)}
+          </FilterButton>
+        ))}
         
-        <ProjectFilters
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <FilterButton 
-            active={activeFilter === "all" ? 1 : 0}
-            onClick={() => handleFilterChange("all")}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            All
-          </FilterButton>
-          
-          <FilterButton 
-            active={activeFilter === "frontend" ? 1 : 0}
-            onClick={() => handleFilterChange("frontend")}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Frontend
-          </FilterButton>
-          
-          <FilterButton 
-            active={activeFilter === "backend" ? 1 : 0}
-            onClick={() => handleFilterChange("backend")}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Backend
-          </FilterButton>
-          
-          <FilterButton 
-            active={activeFilter === "full-stack" ? 1 : 0}
-            onClick={() => handleFilterChange("full-stack")}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Full Stack
-          </FilterButton>
-        </ProjectFilters>
+        {/* Only render the indicator when we have valid measurements */}
+        {activeIndicatorWidth > 0 && (
+          <ActiveIndicator 
+            initial={false}
+            animate={{ 
+              width: activeIndicatorWidth, 
+              x: activeIndicatorLeft 
+            }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 300, 
+              damping: 30 
+            }}
+          />
+        )}
+      </FilterContainer>
+
+      <SearchContainer 
+        ref={searchRef}
+        initial={{ opacity: 0, y: 20 }}
+        animate={searchInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <SearchInput 
+          type="text" 
+          placeholder={t('projects.searchPlaceholder') || "Search projects..."}
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
+          isRTL={isRTL}
+          dir={isRTL ? 'rtl' : 'ltr'}
+          focused={searchFocused}
+          whileFocus={{ scale: 1.02 }}
+          transition={{ duration: 0.3 }}
+          aria-label="Search projects"
+        />
+        <SearchIcon isRTL={isRTL}>
+          <FaSearch aria-hidden="true" />
+        </SearchIcon>
         
+        {searchTerm && (
+          <ClearButton 
+            onClick={clearSearch} 
+            isRTL={isRTL}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            aria-label="Clear search"
+          >
+            <FaTimes aria-hidden="true" />
+          </ClearButton>
+        )}
+      </SearchContainer>
+
+      <AnimatePresence mode="wait">
         <ProjectsGrid
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          as={motion.div}
+          key={`${filter}-${searchTerm}`}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          exit={{ opacity: 0, transition: { duration: 0.2 } }}
         >
-          <AnimatePresence>
-            {displayedProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.5 }}
-                whileHover={{ y: -10 }}
+          {filteredProjects.length > 0 ? (
+            filteredProjects.map((project) => (
+              <ProjectCard 
+                key={project.id} 
+                variants={{
+                  ...itemVariants,
+                  ...cardHoverVariants
+                }}
+                whileHover="hover"
               >
-                <ProjectImage>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '1.2rem'
-                  }}>
-                    {project.title}
-                  </div>
+                <ProjectImageContainer>
+                  <ProjectImage 
+                    src={project.image} 
+                    alt={project.title} 
+                    loading="lazy"
+                  />
                   <ImageOverlay>
-                    <ProjectLink href={project.github} target="_blank" rel="noopener noreferrer">
-                      <FaGithub />
-                    </ProjectLink>
-                    <ProjectLink href={project.demo} target="_blank" rel="noopener noreferrer">
-                      <FaExternalLinkAlt />
-                    </ProjectLink>
+                    <ProjectCategory isRTL={isRTL}>
+                      {t(`projects.categories.${project.category}`) || project.category}
+                    </ProjectCategory>
                   </ImageOverlay>
-                </ProjectImage>
+                </ProjectImageContainer>
                 
-                <ProjectContent>
+                <ProjectContent isRTL={isRTL}>
                   <ProjectTitle>{project.title}</ProjectTitle>
                   <ProjectDescription>{project.description}</ProjectDescription>
                   
-                  <TechStack>
-                    {project.tags.map((tag, index) => (
-                      <TechTag key={index}>
-                        {tag === "React" && <FaReact />}
-                        {tag === "Node.js" && <FaNodeJs />}
-                        {tag === "MongoDB" && <FaDatabase />}
-                        {tag}
-                      </TechTag>
+                  <ProjectTech isRTL={isRTL}>
+                    {project.technologies.map((tech, index) => (
+                      <TechItem 
+                        key={index}
+                        variants={techItemVariants}
+                        whileHover={{ 
+                          y: -5, 
+                          backgroundColor: 'rgba(var(--primary-rgb), 0.1)' 
+                        }}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 400, 
+                          damping: 10 
+                        }}
+                      >
+                        {tech}
+                      </TechItem>
                     ))}
-                  </TechStack>
+                  </ProjectTech>
+                  
+                  <ProjectLinks isRTL={isRTL}>
+                    {project.demoUrl && (
+                      <ProjectLink 
+                        href={project.demoUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="primary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label={`View ${project.title} demo`}
+                      >
+                        <FaExternalLinkAlt aria-hidden="true" /> {t('projects.viewProject')}
+                      </ProjectLink>
+                    )}
+                    
+                    {project.codeUrl && (
+                      <ProjectLink 
+                        href={project.codeUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="secondary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label={`View ${project.title} code`}
+                      >
+                        <FaGithub aria-hidden="true" /> {t('projects.viewCode')}
+                      </ProjectLink>
+                    )}
+                  </ProjectLinks>
                 </ProjectContent>
               </ProjectCard>
-            ))}
-          </AnimatePresence>
+            ))
+          ) : (
+            <EmptyResults
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <EmptyIcon 
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 5, -5, 0] 
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              >
+                <FaSearch aria-hidden="true" />
+              </EmptyIcon>
+              <EmptyText>{t('projects.noResults') || "No projects found"}</EmptyText>
+              <EmptySuggestion>
+                {t('projects.adjustSearch') || "Try adjusting your search or filter criteria"}
+              </EmptySuggestion>
+            </EmptyResults>
+          )}
         </ProjectsGrid>
-        
-        {filteredProjects.length > 3 && (
-          <SeeMoreButton
-            onClick={() => setShowAll(!showAll)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {showAll ? "Show Less" : "See More Projects"}
-          </SeeMoreButton>
-        )}
-      </ProjectsContent>
+      </AnimatePresence>
     </ProjectsContainer>
   );
 };

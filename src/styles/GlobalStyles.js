@@ -9,8 +9,10 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   html, body {
-    font-family: 'Inter', 'Roboto', sans-serif;
+    font-family: ${props => props.theme.isRTL ? "'Tajawal', sans-serif" : "'Inter', sans-serif"};
     scroll-behavior: smooth;
+    transition: all 0.3s ease;
+    direction: ${props => props.theme.isRTL ? 'rtl' : 'ltr'};
   }
 
   body {
@@ -18,6 +20,21 @@ export const GlobalStyles = createGlobalStyle`
     color: ${({ theme }) => theme.text};
     transition: all 0.3s ease;
     overflow-x: hidden;
+    text-align: ${props => props.theme.isRTL ? 'right' : 'left'};
+  }
+
+  /* RTL specific styles */
+  html[dir="rtl"] {
+    .container, 
+    .section, 
+    .form-group {
+      direction: rtl;
+    }
+    
+    input, 
+    textarea {
+      text-align: right;
+    }
   }
 
   a {
@@ -60,5 +77,16 @@ export const GlobalStyles = createGlobalStyle`
     width: 90%;
     max-width: 1400px;
     margin: 0 auto;
+  }
+
+  /* Add smooth transitions between theme changes */
+  .theme-transition * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Improved accessibility focus styles */
+  :focus-visible {
+    outline: 2px solid ${({ theme }) => theme.primary};
+    outline-offset: 2px;
   }
 `;

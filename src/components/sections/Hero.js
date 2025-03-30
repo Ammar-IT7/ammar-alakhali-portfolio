@@ -1,294 +1,452 @@
 // src/components/sections/Hero.js
-import React from 'react';
+import React, { useContext, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaArrowRight } from 'react-icons/fa';
+import { motion, useAnimation, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
-const HeroContainer = styled.section`
-  height: 100vh;
+// Animated particles component
+const Particles = ({ count = 30 }) => {
+  return (
+    <ParticlesContainer>
+      {[...Array(count)].map((_, i) => {
+        const size = Math.random() * 8 + 2;
+        const duration = Math.random() * 20 + 10;
+        const delay = Math.random() * 5;
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        
+        return (
+          <Particle
+            key={i}
+            size={size}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0, 1, 0],
+              scale: [0, 1, 0]
+            }}
+            transition={{
+              duration,
+              repeat: Infinity,
+              delay,
+              ease: "easeInOut"
+            }}
+            style={{ 
+              left: `${x}%`, 
+              top: `${y}%` 
+            }}
+          />
+        );
+      })}
+    </ParticlesContainer>
+  );
+};
+
+const ParticlesContainer = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: -1;
+`;
+
+const Particle = styled(motion.div)`
+  position: absolute;
+  width: ${props => props.size}px;
+  height: ${props => props.size}px;
+  background: ${({ theme }) => theme.primary};
+  border-radius: 50%;
+`;
+
+// Main Hero Section
+const HeroSection = styled.section`
+  min-height: 100vh;
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding-top: 80px;
   position: relative;
   overflow: hidden;
 `;
 
-const HeroContent = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+const HeroBackground = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  opacity: 0.07;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, ${({ theme }) => theme.primary}, transparent 70%);
+    filter: blur(30px);
+    top: -400px;
+    ${({ isRTL }) => isRTL ? 'left: -200px' : 'right: -200px'};
+    animation: pulse 15s infinite alternate;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, ${({ theme }) => theme.secondary}, transparent 70%);
+    filter: blur(30px);
+    bottom: -300px;
+    ${({ isRTL }) => isRTL ? 'right: -100px' : 'left: -100px'};
+    animation: pulse 18s infinite alternate-reverse;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+  }
+`;
+
+const HeroContainer = styled(motion.div)`
   width: 90%;
   max-width: 1400px;
-  margin: 0 auto;
-  
-  @media (max-width: 992px) {
-    flex-direction: column-reverse;
-    text-align: center;
-    padding-top: 5rem;
-  }
-`;
-
-const HeroInfo = styled(motion.div)`
-  flex: 1;
-`;
-
-const HeroImage = styled(motion.div)`
-  flex: 1;
   display: flex;
-  justify-content: flex-end;
-  
-  @media (max-width: 992px) {
-    justify-content: center;
-    margin-bottom: 2rem;
-  }
+  flex-direction: column;
+  align-items: ${({ isRTL }) => isRTL ? 'flex-end' : 'flex-start'};
+  text-align: ${({ isRTL }) => isRTL ? 'right' : 'left'};
+  position: relative;
+  z-index: 2;
 `;
 
-const ImageFrame = styled(motion.div)`
-  width: 350px;
-  height: 350px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 5px solid ${({ theme }) => theme.primary};
-  box-shadow: ${({ theme }) => theme.shadow};
-  
-  @media (max-width: 768px) {
-    width: 250px;
-    height: 250px;
-  }
-`;
-
-const Image = styled.div`
-  width: 100%;
-  height: 100%;
-  background-color: ${({ theme }) => theme.primary}; // Placeholder for actual image
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
-`;
-
-const Greeting = styled(motion.p)`
-  font-size: 1.2rem;
+const ColoredAccent = styled.span`
+  display: inline-block;
+  position: relative;
   color: ${({ theme }) => theme.primary};
+  font-weight: bold;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 0.3em;
+    bottom: 0.1em;
+    left: 0;
+    background-color: ${({ theme }) => theme.primary}20;
+    z-index: -1;
+    transform: skewX(-15deg);
+  }
+`;
+
+const HeroGreeting = styled(motion.div)`
+  font-size: 1.5rem;
   margin-bottom: 1rem;
-`;
-
-const Name = styled(motion.h1)`
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-  margin-bottom: 1.5rem;
+  color: ${({ theme }) => theme.primary};
+  position: relative;
   
-  span {
-    color: ${({ theme }) => theme.primary};
+  &::before {
+    content: '';
+    height: 2px;
+    width: 40px;
+    background: ${({ theme }) => theme.primary};
+    position: absolute;
+    top: 50%;
+    ${({ isRTL }) => isRTL ? 'right: -50px' : 'left: -50px'};
   }
 `;
 
-const Role = styled(motion.h2)`
-  font-size: clamp(1.2rem, 4vw, 2rem);
+const HeroName = styled(motion.h1)`
+  font-size: clamp(3rem, 8vw, 5rem);
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.1;
+  position: relative;
+`;
+
+const HeroTitle = styled(motion.h2)`
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  margin-bottom: 1.5rem;
   color: ${({ theme }) => theme.textAlt};
-  margin-bottom: 1.5rem;
-`;
-
-const Description = styled(motion.p)`
-  font-size: 1.1rem;
-  max-width: 600px;
-  margin-bottom: 2rem;
   
-  @media (max-width: 992px) {
-    margin: 0 auto 2rem auto;
+  & span {
+    display: inline-block;
   }
 `;
 
-const ButtonContainer = styled(motion.div)`
+const HeroDescription = styled(motion.p)`
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin-bottom: 2.5rem;
+  line-height: 1.7;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 70%;
+    top: 15%;
+    ${({ isRTL }) => isRTL ? 'right: -15px' : 'left: -15px'};
+    background: linear-gradient(to bottom, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
+    border-radius: 4px;
+  }
+`;
+
+const CTAContainer = styled(motion.div)`
   display: flex;
   gap: 1.5rem;
+  align-items: center;
+`;
+
+const CTAButton = styled(motion.div)`
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+`;
+
+const CTASecondary = styled(Link)`
+  font-size: 1.1rem;
+  color: ${({ theme }) => theme.textAlt};
+  text-decoration: none;
+  position: relative;
   
-  @media (max-width: 992px) {
-    justify-content: center;
+  &::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: ${({ theme }) => theme.primary};
+    transition: width 0.3s ease;
+  }
+  
+  &:hover::after {
+    width: 100%;
   }
 `;
 
-const PrimaryButton = styled(motion.button)`
-  padding: 0.8rem 2rem;
+const StyledLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 2.2rem;
   background-color: ${({ theme }) => theme.primary};
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+  }
   
   &:hover {
     background-color: ${({ theme }) => theme.secondary};
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    
+    &::before {
+      transform: translateX(100%);
+      transition: transform 0.8s;
+    }
   }
 `;
 
-const SecondaryButton = styled(motion.a)`
-  padding: 0.8rem 2rem;
-  background-color: transparent;
-  color: ${({ theme }) => theme.text};
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    border-color: ${({ theme }) => theme.primary};
-    color: ${({ theme }) => theme.primary};
-  }
-`;
-
-const SocialContainer = styled(motion.div)`
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-  
-  @media (max-width: 992px) {
-    justify-content: center;
-  }
-`;
-
-const SocialIcon = styled(motion.a)`
-  font-size: 1.5rem;
-  color: ${({ theme }) => theme.text};
-  transition: color 0.3s ease;
-  
-  &:hover {
-    color: ${({ theme }) => theme.primary};
-  }
-`;
-
-const BackgroundShape = styled.div`
+const ScrollIndicator = styled(motion.div)`
   position: absolute;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.primary}22, 
-    ${({ theme }) => theme.secondary}11
-  );
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: ${({ theme }) => theme.textAlt};
+  font-size: 0.9rem;
   
-  &.shape1 {
-    width: 400px;
-    height: 400px;
-    top: -100px;
-    left: -100px;
-    filter: blur(100px);
+  p {
+    margin-bottom: 8px;
+    opacity: 0.8;
   }
   
-  &.shape2 {
-    width: 300px;
-    height: 300px;
-    bottom: -50px;
-    right: -50px;
-    filter: blur(80px);
+  .mouse {
+    width: 26px;
+    height: 40px;
+    border: 2px solid ${({ theme }) => theme.textAlt};
+    border-radius: 20px;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 8px;
+      background: ${({ theme }) => theme.primary};
+      border-radius: 4px;
+      animation: scrollAnimation 1.5s infinite;
+    }
+  }
+  
+  @keyframes scrollAnimation {
+    0% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(15px);
+    }
   }
 `;
 
 const Hero = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
+  const { language, t } = useContext(LanguageContext);
+  const isRTL = language === 'ar';
+  const ref = useRef(null);
+  const controls = useAnimation();
+  const { scrollYProgress } = useScroll({ target: ref });
+  
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
+  
+  useEffect(() => {
+    controls.start("visible");
+  }, [controls]);
+
+  const titleAnimation = {
+    hidden: {},
     visible: {
-      opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.12,
       },
     },
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      },
-    },
+  const letterAnimation = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
   };
 
+  // Split subtitle into words
+  const subtitleWords = t('hero.subtitle').split(' ');
+  
   return (
-    <HeroContainer id="hero">
-      <BackgroundShape className="shape1" />
-      <BackgroundShape className="shape2" />
+    <HeroSection ref={ref}>
+      <HeroBackground isRTL={isRTL} />
+      <Particles count={20} />
       
-      <HeroContent>
-        <HeroInfo
-          variants={containerVariants}
+      <HeroContainer 
+        isRTL={isRTL}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        style={{ opacity, scale }}
+      >
+        <HeroGreeting
+          isRTL={isRTL}
+          initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          {t('hero.greeting')}
+        </HeroGreeting>
+        
+        <HeroName
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+        >
+          {t('hero.title')}
+        </HeroName>
+        
+        <HeroTitle
+          variants={titleAnimation}
           initial="hidden"
           animate="visible"
         >
-          <Greeting variants={itemVariants}>Hello there, I'm</Greeting>
-          <Name variants={itemVariants}>
-            Ammar <span>Alakhali</span>
-          </Name>
-          <Role variants={itemVariants}>
-            Software Engineer & Full Stack Developer
-          </Role>
-          <Description variants={itemVariants}>
-            I specialize in building exceptional digital experiences with focus on performance,
-            scalability, and user experience. My expertise spans across frontend and backend technologies.
-          </Description>
-          
-          <ButtonContainer variants={itemVariants}>
-            <Link to="/projects">
-              <PrimaryButton whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                View Projects <FaArrowRight />
-              </PrimaryButton>
-            </Link>
-            <SecondaryButton 
-              href="/resume" 
-              whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }}
+          {subtitleWords.map((word, index) => (
+            <motion.span 
+              key={index} 
+              variants={letterAnimation}
+              style={{ marginRight: '10px' }}
             >
-              Resume
-            </SecondaryButton>
-          </ButtonContainer>
-          
-          <SocialContainer variants={itemVariants}>
-            <SocialIcon 
-              href="https://github.com/ammaralakhali" 
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ y: -5 }}
-            >
-              <FaGithub />
-            </SocialIcon>
-            <SocialIcon 
-              href="https://linkedin.com/in/ammaralakhali" 
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ y: -5 }}
-            >
-              <FaLinkedin />
-            </SocialIcon>
-          </SocialContainer>
-        </HeroInfo>
+              {index === 1 ? <ColoredAccent>{word}</ColoredAccent> : word}
+            </motion.span>
+          ))}
+        </HeroTitle>
         
-        <HeroImage
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+        <HeroDescription
+          isRTL={isRTL}
+          initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, delay: 0.6 }}
         >
-          <ImageFrame 
-            whileHover={{ scale: 1.05, rotate: 5 }}
-            transition={{ type: "spring", stiffness: 300 }}
+          {t('hero.description')}
+        </HeroDescription>
+        
+        <CTAContainer
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.8 }}
+        >
+          <CTAButton
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Image>
-              AA
-            </Image>
-          </ImageFrame>
-        </HeroImage>
-      </HeroContent>
-    </HeroContainer>
+            <StyledLink to="/projects">
+              {t('hero.cta')}
+              {isRTL ? <FaArrowLeft style={{ marginRight: '8px' }} /> : <FaArrowRight style={{ marginLeft: '8px' }} />}
+            </StyledLink>
+          </CTAButton>
+          
+          <CTASecondary to="/about">
+            {t('hero.learnMore') || 'Learn more about me'}
+          </CTASecondary>
+        </CTAContainer>
+      </HeroContainer>
+      
+      <ScrollIndicator
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 0.8 }}
+      >
+        <p>{t('hero.scroll') || 'Scroll down'}</p>
+        <div className="mouse"></div>
+      </ScrollIndicator>
+    </HeroSection>
   );
 };
 

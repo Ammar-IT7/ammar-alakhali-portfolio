@@ -1,296 +1,405 @@
 // src/components/sections/AboutSection.js
-import React from 'react';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { FaCode, FaServer, FaDatabase, FaCloud } from 'react-icons/fa';
+import React, { useContext, useEffect, useRef } from 'react';
+import styled, { keyframes } from 'styled-components';
+import { motion, useInView, useAnimation } from 'framer-motion';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import myImage from '../../assets/profile.jpg';
 
 const AboutContainer = styled.section`
   padding: 6rem 0;
-`;
-
-const AboutContent = styled.div`
   width: 90%;
   max-width: 1400px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const SectionTitle = styled(motion.h2)`
-  text-align: center;
-  margin-bottom: 3rem;
   position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    height: 50%;
+    width: 50%;
+    top: -15%;
+    right: -15%;
+    background: radial-gradient(circle, ${({ theme }) => `${theme.primary}15`} 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(80px);
+  }
   
   &::after {
     content: '';
     position: absolute;
-    bottom: -0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 4px;
-    background-color: ${({ theme }) => theme.primary};
-    border-radius: 2px;
+    height: 40%;
+    width: 40%;
+    bottom: -10%;
+    left: -10%;
+    background: radial-gradient(circle, ${({ theme }) => `${theme.secondary}15`} 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(60px);
   }
 `;
 
 const AboutGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  gap: 4rem;
+  align-items: center;
   
   @media (max-width: 992px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const AboutInfo = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
+const imageFrameAnimation = keyframes`
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(5px, 0); }
+  50% { transform: translate(5px, 5px); }
+  75% { transform: translate(0, 5px); }
+  100% { transform: translate(0, 0); }
 `;
 
-const AboutBio = styled(motion.p)`
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.8;
-`;
-
-const ExperienceList = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 2rem;
+const AboutImageContainer = styled(motion.div)`
+  position: relative;
+  z-index: 1;
   
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  &::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 5px solid ${({ theme }) => theme.primary};
+    top: -20px;
+    ${props => props.isRTL ? 'right' : 'left'}: -20px;
+    z-index: -1;
+    border-radius: 15px;
+    animation: ${imageFrameAnimation} 8s ease-in-out infinite;
+    transition: all 0.3s ease;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border: 4px solid ${({ theme }) => theme.secondary};
+    border-radius: 50%;
+    bottom: -40px;
+    ${props => props.isRTL ? 'left' : 'right'}: -30px;
+    z-index: -1;
+    opacity: 0.6;
+  }
+  
+  @media (max-width: 992px) {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  &:hover::before {
+    transform: translate(${props => props.isRTL ? '-10px' : '10px'}, 10px);
   }
 `;
 
-const ExperienceItem = styled(motion.div)`
-  background-color: ${({ theme }) => theme.backgroundAlt};
-  padding: 1.5rem;
-  border-radius: 8px;
+const AboutImage = styled.img`
+  width: 100%;
+  border-radius: 15px;
   box-shadow: ${({ theme }) => theme.shadow};
+  transition: transform 0.5s ease, filter 0.5s ease;
+  filter: saturate(1.05);
+  
+  &:hover {
+    transform: scale(1.02);
+    filter: saturate(1.2) contrast(1.05);
+  }
 `;
 
-const ExperienceIcon = styled.div`
-  font-size: 1.8rem;
+const AboutContent = styled.div`
+  text-align: ${props => props.isRTL ? 'right' : 'left'};
+  position: relative;
+`;
+
+const AboutHeading = styled(motion.h2)`
+  margin-bottom: 1.5rem;
   color: ${({ theme }) => theme.primary};
-  margin-bottom: 1rem;
+  font-size: 2.4rem;
+  position: relative;
+  display: inline-block;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 4px;
+    background: linear-gradient(to right, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
+    bottom: -10px;
+    left: 0;
+    border-radius: 2px;
+  }
 `;
 
-const ExperienceTitle = styled.h3`
+const AboutDescription = styled(motion.p)`
+  margin-bottom: 2.5rem;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  position: relative;
+  z-index: 1;
+  
+  strong, em {
+    color: ${({ theme }) => theme.primary};
+    font-weight: 600;
+  }
+`;
+
+const StatsGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+    ${props => props.isRTL ? 'margin-right' : 'margin-left'}: auto;
+    ${props => props.isRTL ? 'margin-left' : 'margin-right'}: auto;
+  }
+`;
+
+const glowEffect = keyframes`
+  0% { box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+  50% { box-shadow: 0 0 20px ${({ theme }) => `${theme.primary}30`}; }
+  100% { box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+`;
+
+const StatItem = styled(motion.div)`
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.cardBg || '#ffffff05'};
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    animation: ${glowEffect} 2s infinite;
+  }
+`;
+
+const countAnimation = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const StatValue = styled.h3`
+  font-size: 2.5rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
+  background: linear-gradient(to right, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  position: relative;
+  animation: ${countAnimation} 0.5s forwards;
+  animation-delay: ${props => props.delay || '0s'};
+  opacity: 0;
 `;
 
-const ExperienceDescription = styled.p`
+const StatLabel = styled.p`
   color: ${({ theme }) => theme.textAlt};
+  font-weight: 500;
   font-size: 0.95rem;
 `;
 
-const AboutStats = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
+const buttonHover = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 `;
 
-const StatCard = styled(motion.div)`
-  background-color: ${({ theme }) => theme.backgroundAlt};
-  padding: 2rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  box-shadow: ${({ theme }) => theme.shadow};
+const AboutButton = styled(motion.a)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 2.2rem;
+  background: linear-gradient(45deg, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary}, ${({ theme }) => theme.primary});
+  background-size: 200% 200%;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 15px ${({ theme }) => `${theme.primary}40`};
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    animation: ${buttonHover} 2s infinite;
+    box-shadow: 0 6px 20px ${({ theme }) => `${theme.primary}60`};
+    transform: translateY(-2px);
+    
+    &::after {
+      transform: scaleX(1.5) scaleY(1.6);
+      opacity: 0;
+    }
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0);
+    border-radius: 50%;
+    transform-origin: center;
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+    pointer-events: none;
+  }
 `;
 
-const StatTitle = styled.h3`
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-  color: ${({ theme }) => theme.primary};
-`;
-
-const StatList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const StatItem = styled.li`
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid ${({ theme }) => theme.border};
+const ButtonIcon = styled.span`
+  display: inline-flex;
+  transition: transform 0.3s ease;
+  
+  ${AboutButton}:hover & {
+    transform: translateX(4px);
+  }
 `;
 
 const AboutSection = () => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
+  const { language, t } = useContext(LanguageContext);
+  const isRTL = language === 'ar';
+  
+  const statsRef = useRef(null);
+  const isStatsInView = useInView(statsRef, { once: true, amount: 0.3 });
+  const statsControls = useAnimation();
+  
+  useEffect(() => {
+    if (isStatsInView) {
+      statsControls.start('visible');
+    }
+  }, [isStatsInView, statsControls]);
+  
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-      },
-    },
+        staggerChildren: 0.2
+      }
+    }
   };
-
+  
   const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
-      y: 0,
       opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+  
+  const statCardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: i => ({
+      opacity: 1,
+      y: 0,
       transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      },
-    },
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    })
   };
 
   return (
-    <AboutContainer id="about" ref={ref}>
-      <AboutContent>
-        <SectionTitle
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+    <AboutContainer>
+      <AboutGrid>
+        <AboutImageContainer
+          isRTL={isRTL}
+          initial={{ opacity: 0, x: isRTL ? 50 : -50, rotateY: isRTL ? 10 : -10 }}
+          whileInView={{ 
+            opacity: 1, 
+            x: 0, 
+            rotateY: 0,
+            transition: { 
+              duration: 0.8, 
+              ease: "easeOut"
+            }
+          }}
+          viewport={{ once: true, amount: 0.3 }}
         >
-          About Me
-        </SectionTitle>
+          <AboutImage 
+            src={myImage} 
+            alt="Ammar Alakhali" 
+            loading="lazy"
+          />
+        </AboutImageContainer>
         
-        <AboutGrid>
-          <AboutInfo
-            variants={containerVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-          >
-            <AboutBio variants={itemVariants}>
-              I'm a passionate software engineer with over 5 years of experience in developing
-              high-quality web applications. My journey in software development began when I 
-              built my first website during college, and since then, I've been constantly 
-              expanding my knowledge and skills.
-            </AboutBio>
-            
-            <AboutBio variants={itemVariants}>
-              I specialize in JavaScript ecosystem, with expertise in React, Node.js, and modern web technologies.
-              I love creating clean, efficient, and scalable solutions that solve real-world problems.
-            </AboutBio>
-            
-            <ExperienceList>
-              <ExperienceItem 
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <ExperienceIcon>
-                  <FaCode />
-                </ExperienceIcon>
-                <ExperienceTitle>Frontend Development</ExperienceTitle>
-                <ExperienceDescription>
-                  Creating responsive, accessible, and performant user interfaces using modern frameworks.
-                </ExperienceDescription>
-              </ExperienceItem>
-              
-              <ExperienceItem 
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <ExperienceIcon>
-                  <FaServer />
-                </ExperienceIcon>
-                <ExperienceTitle>Backend Development</ExperienceTitle>
-                <ExperienceDescription>
-                  Building robust APIs and services with focus on security and scalability.
-                </ExperienceDescription>
-              </ExperienceItem>
-              
-              <ExperienceItem 
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <ExperienceIcon>
-                  <FaDatabase />
-                </ExperienceIcon>
-                <ExperienceTitle>Database Design</ExperienceTitle>
-                <ExperienceDescription>
-                  Designing efficient database schemas for both SQL and NoSQL databases.
-                </ExperienceDescription>
-              </ExperienceItem>
-              
-              <ExperienceItem 
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <ExperienceIcon>
-                  <FaCloud />
-                </ExperienceIcon>
-                <ExperienceTitle>Cloud Services</ExperienceTitle>
-                <ExperienceDescription>
-                  Deploying and managing applications on cloud platforms like AWS and Azure.
-                </ExperienceDescription>
-              </ExperienceItem>
-            </ExperienceList>
-          </AboutInfo>
+        <AboutContent
+          as={motion.div}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          isRTL={isRTL}
+        >
+          <AboutHeading variants={itemVariants}>
+            {t('about.title')}
+          </AboutHeading>
           
-          <AboutStats
-            variants={containerVariants}
+          <AboutDescription variants={itemVariants}>
+            {t('about.paragraph1')}
+          </AboutDescription>
+          
+          <AboutDescription variants={itemVariants}>
+            {t('about.paragraph2')}
+          </AboutDescription>
+          
+          <StatsGrid 
+            ref={statsRef}
+            animate={statsControls}
             initial="hidden"
-            animate={inView ? "visible" : "hidden"}
+            variants={containerVariants}
+            isRTL={isRTL}
           >
-            <StatCard variants={itemVariants}>
-              <StatTitle>Education</StatTitle>
-              <StatList>
-                <StatItem>
-                  <strong>MSc in Computer Science</strong>
-                  <span>2018 - 2020</span>
-                </StatItem>
-                <StatItem>
-                  <strong>BSc in Software Engineering</strong>
-                  <span>2014 - 2018</span>
-                </StatItem>
-                <StatItem>
-                  <strong>Advanced Web Development Certification</strong>
-                  <span>2017</span>
-                </StatItem>
-              </StatList>
-            </StatCard>
-            
-            <StatCard variants={itemVariants}>
-              <StatTitle>Work Experience</StatTitle>
-              <StatList>
-                <StatItem>
-                  <strong>Senior Software Engineer</strong>
-                  <span>2022 - Present</span>
-                </StatItem>
-                <StatItem>
-                  <strong>Full Stack Developer</strong>
-                  <span>2020 - 2022</span>
-                </StatItem>
-                <StatItem>
-                  <strong>Frontend Developer</strong>
-                  <span>2018 - 2020</span>
-                </StatItem>
-              </StatList>
-            </StatCard>
-            
-            <StatCard variants={itemVariants}>
-              <StatTitle>Interests</StatTitle>
-              <StatList>
-                <StatItem>Open Source Contribution</StatItem>
-                <StatItem>Web Performance Optimization</StatItem>
-                <StatItem>UI/UX Design</StatItem>
-                <StatItem>Machine Learning</StatItem>
-              </StatList>
-            </StatCard>
-          </AboutStats>
-        </AboutGrid>
-      </AboutContent>
+            {[
+              { value: "5+", label: t('about.yearsExperience'), delay: "0.1s" },
+              { value: "20+", label: t('about.projectsCompleted'), delay: "0.2s" },
+              { value: "15+", label: t('about.clientsSatisfied'), delay: "0.3s" }
+            ].map((stat, index) => (
+              <StatItem 
+                key={index}
+                custom={index}
+                variants={statCardVariants}
+              >
+                <StatValue delay={stat.delay}>{stat.value}</StatValue>
+                <StatLabel>{stat.label}</StatLabel>
+              </StatItem>
+            ))}
+          </StatsGrid>
+          
+          <AboutButton
+            href="/resume"
+            variants={itemVariants}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            Download CV
+            <ButtonIcon>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4V16M12 16L8 12M12 16L16 12M6 20H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </ButtonIcon>
+          </AboutButton>
+        </AboutContent>
+      </AboutGrid>
     </AboutContainer>
   );
 };
