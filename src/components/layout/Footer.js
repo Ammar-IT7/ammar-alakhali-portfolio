@@ -190,7 +190,7 @@ const Footer = () => {
             variants={item}
             whileHover={{ scale: 1.03 }}
           >
-            {isRTL ? 'عمار الأخالي' : 'Ammar Alakhali'}
+            {isRTL ? 'عمار الأكحلي' : 'Ammar Alakhali'}
           </FooterTitle>
           <motion.p variants={item}>{t('about.paragraph1')}</motion.p>
           <SocialLinks 
@@ -319,7 +319,7 @@ const Footer = () => {
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
-        © {currentYear} {isRTL ? 'عمار الأخالي' : 'Ammar Alakhali'}. {t('footer.rights')}
+        © {currentYear} {isRTL ? 'عمار الأكحلي' : 'Ammar Alakhali'}. {t('footer.rights')}
       </Copyright>
     </FooterContainer>
   );

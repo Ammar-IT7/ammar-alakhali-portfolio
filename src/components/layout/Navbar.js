@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSun, FaMoon, FaBars, FaTimes, FaLanguage } from 'react-icons/fa';
+import { FaSun, FaMoon, FaBars, FaTimes } from 'react-icons/fa';
 import { LanguageContext } from '../../contexts/LanguageContext';
 
 const NavContainer = styled(motion.header)`
@@ -263,7 +263,7 @@ const Navbar = ({ toggleTheme, currentTheme }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {language === 'en' ? 'Ammar Alakhali' : 'عمار الأخالي'}
+          {language === 'en' ? 'Ammar Alakhali' : 'عمار الأكحلي'}
         </Logo>
 
         <MenuIcon 
@@ -340,7 +340,6 @@ const Navbar = ({ toggleTheme, currentTheme }) => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <FaLanguage />
             <LanguageIndicator>{language.toUpperCase()}</LanguageIndicator>
           </LanguageToggle>
           
