@@ -14,7 +14,8 @@ export const translations = {
         subtitle: "Software Engineer",
         description: "I build responsive and scalable web applications with modern technologies.",
         cta: "View My Work",
-        scroll: "Scroll Down"
+        scroll: "Scroll Down",
+        learnMore:"Learn More"
       },
       about: {
         title: "About Me",
@@ -86,7 +87,8 @@ export const translations = {
         subtitle: "مهندس برمجيات",
         description: "أقوم ببناء تطبيقات ويب متجاوبة وقابلة للتطوير باستخدام التقنيات الحديثة.",
         cta: "اطلع على أعمالي",
-        scroll: "قم بالتمرير لأسفل"
+        scroll: "قم بالتمرير لأسفل",
+        learnMore:"اعرف المزيد"
       },
       about: {
         title: "نبذة عني",

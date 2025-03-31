@@ -1,12 +1,15 @@
 // src/pages/Resume.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { FaDownload, FaBriefcase, FaGraduationCap, FaCertificate, FaCode } from 'react-icons/fa';
+import { LanguageContext } from '../contexts/LanguageContext';
 
 const PageContainer = styled.div`
   padding-top: 5rem;
+  direction: ${({ language }) => language === 'ar' ? 'rtl' : 'ltr'};
+  text-align: ${({ language }) => language === 'ar' ? 'left' : 'left'};
 `;
 
 const PageHeader = styled.div`
@@ -40,6 +43,10 @@ const DownloadButton = styled(motion.a)`
   &:hover {
     background-color: ${({ theme }) => theme.secondary};
   }
+  
+  svg {
+    margin-${({ language }) => language === 'ar' ? 'left' : 'right'}: 0.5rem;
+  }
 `;
 
 const ResumeContent = styled.div`
@@ -69,8 +76,8 @@ const SectionIcon = styled.span`
 
 const ExperienceItem = styled.div`
   margin-bottom: 2rem;
-  padding-left: 1.5rem;
-  border-left: 2px solid ${({ theme }) => theme.border};
+  padding-${({ language }) => language === 'ar' ? 'left' : 'left'}: 1.5rem;
+  border-${({ language }) => language === 'ar' ? 'left' : 'left'}: 2px solid ${({ theme }) => theme.border};
   position: relative;
   
   &::before {
@@ -80,7 +87,7 @@ const ExperienceItem = styled.div`
     height: 12px;
     border-radius: 50%;
     background-color: ${({ theme }) => theme.primary};
-    left: -7px;
+    ${({ language }) => language === 'ar' ? 'left: -7px;' : 'left: -7px;'}
     top: 8px;
   }
 `;
@@ -89,9 +96,11 @@ const ExperienceHeader = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
+  flex-direction: ${({ language }) => language === 'ar' ? 'row-reverse' : 'row'};
   
   @media (max-width: 768px) {
     flex-direction: column;
+    align-items: ${({ language }) => language === 'ar' ? 'flex-start' : 'flex-start'};
     gap: 0.5rem;
   }
 `;
@@ -116,7 +125,8 @@ const ExperienceDescription = styled.p`
 `;
 
 const ExperienceList = styled.ul`
-  padding-left: 1.5rem;
+  padding-${({ language }) => language === 'ar' ? 'left' : 'left'}: 1.5rem;
+  list-style-position: outside;
   
   li {
     margin-bottom: 0.5rem;
@@ -125,7 +135,7 @@ const ExperienceList = styled.ul`
     &::before {
       content: '•';
       position: absolute;
-      left: -1.5rem;
+      ${({ language }) => language === 'ar' ? 'left: -1.5rem;' : 'left: -1.5rem;'}
       color: ${({ theme }) => theme.primary};
     }
   }
@@ -147,7 +157,7 @@ const SkillCategoryTitle = styled.h4`
 `;
 
 const SkillsList = styled.ul`
-  padding-left: 1.5rem;
+  padding-${({ language }) => language === 'ar' ? 'left' : 'left'}: 1.5rem;
   
   li {
     margin-bottom: 0.5rem;
@@ -156,13 +166,15 @@ const SkillsList = styled.ul`
     &::before {
       content: '•';
       position: absolute;
-      left: -1.5rem;
+      ${({ language }) => language === 'ar' ? 'left: -1.5rem;' : 'left: -1.5rem;'}
       color: ${({ theme }) => theme.primary};
     }
   }
 `;
 
 const Resume = () => {
+  const { language, t } = useContext(LanguageContext);
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -181,25 +193,25 @@ const Resume = () => {
   return (
     <>
       <Helmet>
-        <title>Resume | Ammar Alakhali</title>
+        <title>{t('resume.title')} | Ammar Alakhali</title>
         <meta name="description" content="View Ammar Alakhali's professional resume detailing experience, education, and skills as a software engineer." />
         <meta name="keywords" content="Ammar Alakhali, resume, CV, experience, education, skills, software engineer" />
       </Helmet>
-      <PageContainer>
+      <PageContainer language={language}>
         <PageHeader>
           <PageTitle
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            My Resume
+            {t('resume.title')}
           </PageTitle>
           <PageDescription
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            A detailed overview of my professional experience, education, and technical skills.
+            {t('resume.description')}
           </PageDescription>
           
           <DownloadButton 
@@ -208,8 +220,9 @@ const Resume = () => {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            language={language}
           >
-            <FaDownload /> Download Resume
+            <FaDownload /> {t('resume.download')}
           </DownloadButton>
         </PageHeader>
         
@@ -219,12 +232,12 @@ const Resume = () => {
             animate="visible"
             variants={sectionVariants}
           >
-            <SectionTitle>
-              <SectionIcon><FaBriefcase /></SectionIcon> Work Experience
+            <SectionTitle language={language}>
+              <SectionIcon><FaBriefcase /></SectionIcon> {t('resume.experience')}
             </SectionTitle>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>Senior Software Engineer</ExperienceTitle>
                 <ExperienceDate>2022 - Present</ExperienceDate>
               </ExperienceHeader>
@@ -232,7 +245,7 @@ const Resume = () => {
               <ExperienceDescription>
                 Lead developer for enterprise-level web applications serving thousands of users daily.
               </ExperienceDescription>
-              <ExperienceList>
+              <ExperienceList language={language}>
                 <li>Designed and implemented scalable microservices architecture using Node.js and Docker</li>
                 <li>Optimized database queries resulting in 40% improved application performance</li>
                 <li>Led a team of 5 developers, implementing Agile methodologies and CI/CD pipelines</li>
@@ -240,8 +253,8 @@ const Resume = () => {
               </ExperienceList>
             </ExperienceItem>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>Full Stack Developer</ExperienceTitle>
                 <ExperienceDate>2020 - 2022</ExperienceDate>
               </ExperienceHeader>
@@ -249,7 +262,7 @@ const Resume = () => {
               <ExperienceDescription>
                 Developed and maintained client websites and web applications across various industries.
               </ExperienceDescription>
-              <ExperienceList>
+              <ExperienceList language={language}>
                 <li>Created responsive, cross-browser compatible web applications using React and Express</li>
                 <li>Implemented authentication and authorization systems using JWT and OAuth</li>
                 <li>Integrated third-party APIs and payment gateways (Stripe, PayPal)</li>
@@ -257,8 +270,8 @@ const Resume = () => {
               </ExperienceList>
             </ExperienceItem>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>Frontend Developer</ExperienceTitle>
                 <ExperienceDate>2018 - 2020</ExperienceDate>
               </ExperienceHeader>
@@ -266,7 +279,7 @@ const Resume = () => {
               <ExperienceDescription>
                 Specialized in building interactive user interfaces for web applications.
               </ExperienceDescription>
-              <ExperienceList>
+              <ExperienceList language={language}>
                 <li>Developed responsive websites using HTML5, CSS3, and JavaScript (ES6+)</li>
                 <li>Built and maintained React components following best practices</li>
                 <li>Ensured cross-browser compatibility and implemented accessibility standards</li>
@@ -280,12 +293,12 @@ const Resume = () => {
             animate="visible"
             variants={sectionVariants}
           >
-            <SectionTitle>
-              <SectionIcon><FaGraduationCap /></SectionIcon> Education
+            <SectionTitle language={language}>
+              <SectionIcon><FaGraduationCap /></SectionIcon> {t('resume.education')}
             </SectionTitle>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>Master of Science in Computer Science</ExperienceTitle>
                 <ExperienceDate>2018 - 2020</ExperienceDate>
               </ExperienceHeader>
@@ -293,15 +306,15 @@ const Resume = () => {
               <ExperienceDescription>
                 Specialized in Software Engineering and Distributed Systems.
               </ExperienceDescription>
-              <ExperienceList>
+              <ExperienceList language={language}>
                 <li>GPA: 3.8/4.0</li>
                 <li>Master's Thesis: "Optimizing Performance in Distributed Web Applications"</li>
                 <li>Relevant Coursework: Advanced Algorithms, Cloud Computing, Machine Learning</li>
               </ExperienceList>
             </ExperienceItem>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>Bachelor of Science in Software Engineering</ExperienceTitle>
                 <ExperienceDate>2014 - 2018</ExperienceDate>
               </ExperienceHeader>
@@ -309,7 +322,7 @@ const Resume = () => {
               <ExperienceDescription>
                 Graduated with honors.
               </ExperienceDescription>
-              <ExperienceList>
+              <ExperienceList language={language}>
                 <li>GPA: 3.7/4.0</li>
                 <li>Senior Project: "Real-time Collaborative Code Editor"</li>
                 <li>Relevant Coursework: Data Structures, Operating Systems, Database Management</li>
@@ -322,28 +335,28 @@ const Resume = () => {
             animate="visible"
             variants={sectionVariants}
           >
-            <SectionTitle>
-              <SectionIcon><FaCertificate /></SectionIcon> Certifications
+            <SectionTitle language={language}>
+              <SectionIcon><FaCertificate /></SectionIcon> {t('resume.certifications')}
             </SectionTitle>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>AWS Certified Solutions Architect</ExperienceTitle>
                 <ExperienceDate>2021</ExperienceDate>
               </ExperienceHeader>
               <ExperienceCompany>Amazon Web Services</ExperienceCompany>
             </ExperienceItem>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>Google Cloud Professional Developer</ExperienceTitle>
                 <ExperienceDate>2020</ExperienceDate>
               </ExperienceHeader>
               <ExperienceCompany>Google Cloud</ExperienceCompany>
             </ExperienceItem>
             
-            <ExperienceItem>
-              <ExperienceHeader>
+            <ExperienceItem language={language}>
+              <ExperienceHeader language={language}>
                 <ExperienceTitle>MongoDB Certified Developer</ExperienceTitle>
                 <ExperienceDate>2019</ExperienceDate>
               </ExperienceHeader>
@@ -356,14 +369,14 @@ const Resume = () => {
             animate="visible"
             variants={sectionVariants}
           >
-            <SectionTitle>
-              <SectionIcon><FaCode /></SectionIcon> Technical Skills
+            <SectionTitle language={language}>
+              <SectionIcon><FaCode /></SectionIcon> {t('resume.skills')}
             </SectionTitle>
             
             <SkillsGrid>
               <SkillCategory>
                 <SkillCategoryTitle>Programming Languages</SkillCategoryTitle>
-                <SkillsList>
+                <SkillsList language={language}>
                   <li>JavaScript (ES6+)</li>
                   <li>TypeScript</li>
                   <li>Python</li>
@@ -374,7 +387,7 @@ const Resume = () => {
               
               <SkillCategory>
                 <SkillCategoryTitle>Frontend</SkillCategoryTitle>
-                <SkillsList>
+                <SkillsList language={language}>
                   <li>React</li>
                   <li>Redux</li>
                   <li>Next.js</li>
@@ -386,7 +399,7 @@ const Resume = () => {
               
               <SkillCategory>
                 <SkillCategoryTitle>Backend</SkillCategoryTitle>
-                <SkillsList>
+                <SkillsList language={language}>
                   <li>Node.js</li>
                   <li>Express.js</li>
                   <li>GraphQL</li>
@@ -397,7 +410,7 @@ const Resume = () => {
               
               <SkillCategory>
                 <SkillCategoryTitle>Databases</SkillCategoryTitle>
-                <SkillsList>
+                <SkillsList language={language}>
                   <li>MongoDB</li>
                   <li>PostgreSQL</li>
                   <li>MySQL</li>
@@ -407,7 +420,7 @@ const Resume = () => {
               
               <SkillCategory>
                 <SkillCategoryTitle>DevOps & Tools</SkillCategoryTitle>
-                <SkillsList>
+                <SkillsList language={language}>
                   <li>Git & GitHub</li>
                   <li>Docker</li>
                   <li>Kubernetes</li>
@@ -418,7 +431,7 @@ const Resume = () => {
               
               <SkillCategory>
                 <SkillCategoryTitle>Other</SkillCategoryTitle>
-                <SkillsList>
+                <SkillsList language={language}>
                   <li>Agile Methodologies</li>
                   <li>Test-Driven Development</li>
                   <li>RESTful Services</li>
