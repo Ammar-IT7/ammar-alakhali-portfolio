@@ -1,13 +1,14 @@
 {
   "files": {
     "main.css": "/ammar-alakhali-portfolio/static/css/main.e6c13ad2.css",
-    "main.js": "/ammar-alakhali-portfolio/static/js/main.4fadc0b1.js",
+    "main.js": "/ammar-alakhali-portfolio/static/js/main.d9cd8e2e.js",
+    "static/media/profile.jpg": "/ammar-alakhali-portfolio/static/media/profile.7c7a5ab650f26dfbb8d7.jpg",
     "index.html": "/ammar-alakhali-portfolio/index.html",
     "main.e6c13ad2.css.map": "/ammar-alakhali-portfolio/static/css/main.e6c13ad2.css.map",
-    "main.4fadc0b1.js.map": "/ammar-alakhali-portfolio/static/js/main.4fadc0b1.js.map"
+    "main.d9cd8e2e.js.map": "/ammar-alakhali-portfolio/static/js/main.d9cd8e2e.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.4fadc0b1.js"
+    "static/js/main.d9cd8e2e.js"
   ]
 }
