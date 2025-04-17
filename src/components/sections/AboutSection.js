@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, useInView, useAnimation } from 'framer-motion';
 import { LanguageContext } from '../../contexts/LanguageContext';
-import myImage from '../../assets/profile.jpg';
+import myImage from '../../assets/images/profile.jpg';
 
 const AboutContainer = styled.section`
   padding: 6rem 0;
