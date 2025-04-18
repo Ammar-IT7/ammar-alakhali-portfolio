@@ -71,6 +71,28 @@ export const translations = {
       education: "Logo Design",
       certifications: "Web Development",
       skills: "Brand Identity"
+    },
+    home: {
+      meta: {
+        title: "Enova Studio | UI/UX Design & Web Development",
+        description: "Enova Studio specializes in UI/UX design, logo creation, and website development with innovative solutions for businesses of all sizes.",
+        keywords: "UI/UX design, web development, branding, digital solutions",
+        ogTitle: "Enova Studio | UI/UX Design & Web Development",
+        ogDescription: "Creative design studio specializing in UI/UX, logos, and websites"
+      },
+      loading: {
+        preparing: "Preparing your experience",
+        loadingElements: "Loading design elements",
+        settingAnimations: "Setting up animations",
+        optimizing: "Optimizing performance",
+        almostReady: "Almost ready",
+        finalTouches: "Final touches",
+        pleaseWait: "Please wait a moment",
+        readyToLaunch: "Ready to launch",
+        loadingContent: "Loading content",
+        almostThere: "Almost there"
+      },
+      scrollToTop: "Scroll to top"
     }
   },
   ar: {
@@ -144,6 +166,28 @@ export const translations = {
       education: "تصميم الشعارات",
       certifications: "تطوير الويب",
       skills: "هوية العلامة التجارية"
+    },
+    home: {
+      meta: {
+        title: "إينوفا ستوديو | تصميم واجهة المستخدم وتطوير الويب",
+        description: "إينوفا ستوديو متخصص في تصميم واجهة المستخدم، وإنشاء الشعارات، وتطوير مواقع الويب مع حلول مبتكرة للشركات من جميع الأحجام.",
+        keywords: "تصميم واجهة المستخدم، تطوير الويب، العلامة التجارية، الحلول الرقمية",
+        ogTitle: "إينوفا ستوديو | تصميم واجهة المستخدم وتطوير الويب",
+        ogDescription: "استوديو تصميم إبداعي متخصص في واجهة المستخدم، والشعارات، ومواقع الويب"
+      },
+      loading: {
+        preparing: "تجهيز تجربتك",
+        loadingElements: "تحميل عناصر التصميم",
+        settingAnimations: "إعداد الرسوم المتحركة",
+        optimizing: "تحسين الأداء",
+        almostReady: "جاهز تقريبًا",
+        finalTouches: "اللمسات الأخيرة",
+        pleaseWait: "الرجاء الانتظار لحظة",
+        readyToLaunch: "جاهز للانطلاق",
+        loadingContent: "تحميل المحتوى",
+        almostThere: "ما زلنا هنا"
+      },
+      scrollToTop: "التمرير إلى الأعلى"
     }
   }
 };

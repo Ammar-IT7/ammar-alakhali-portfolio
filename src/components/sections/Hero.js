@@ -1,4 +1,3 @@
-// src/components/sections/Hero.js
 import React, { useContext, useRef, useEffect, useState, memo, useMemo, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
@@ -294,11 +293,23 @@ const HeroSection = styled.section`
   position: relative;
   overflow: hidden;
   
+  @media (max-width: 1200px) {
+    padding: 70px 24px 60px;
+  }
+  
   @media (max-width: 768px) {
-    padding-top: 70px;
+    padding: 60px 16px 50px;
     align-items: flex-start;
-    padding-bottom: 70px;
     min-height: calc(100vh - 40px);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 50px 12px 40px;
+  }
+  
+  @media (max-height: 700px) {
+    padding-top: 40px;
+    min-height: auto;
   }
 `;
 
@@ -325,11 +336,25 @@ const HeroBackground = styled.div`
     will-change: transform, opacity;
     animation: ${pulse} 15s infinite alternate;
     
+    @media (max-width: 1200px) {
+      width: 600px;
+      height: 600px;
+      top: -300px;
+      ${({ isRTL }) => isRTL ? 'left: -180px' : 'right: -180px'};
+    }
+    
     @media (max-width: 768px) {
       width: 500px;
       height: 500px;
       top: -250px;
       ${({ isRTL }) => isRTL ? 'left: -150px' : 'right: -150px'};
+    }
+    
+    @media (max-width: 480px) {
+      width: 400px;
+      height: 400px;
+      top: -200px;
+      ${({ isRTL }) => isRTL ? 'left: -120px' : 'right: -120px'};
     }
   }
   
@@ -346,33 +371,59 @@ const HeroBackground = styled.div`
     will-change: transform, opacity;
     animation: ${pulse} 18s infinite alternate-reverse;
     
+    @media (max-width: 1200px) {
+      width: 500px;
+      height: 500px;
+      bottom: -250px;
+      ${({ isRTL }) => isRTL ? 'right: -120px' : 'left: -120px'};
+    }
+    
     @media (max-width: 768px) {
       width: 400px;
       height: 400px;
       bottom: -200px;
       ${({ isRTL }) => isRTL ? 'right: -100px' : 'left: -100px'};
     }
+    
+    @media (max-width: 480px) {
+      width: 300px;
+      height: 300px;
+      bottom: -150px;
+      ${({ isRTL }) => isRTL ? 'right: -80px' : 'left: -80px'};
+    }
   }
 `;
 
 const HeroContainer = styled(motion.div)`
-  width: 90%;
+  width: 100%;
   max-width: 1400px;
   display: flex;
+  ${'' /* flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'}; */}
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   position: relative;
   z-index: 2;
+  gap: 30px;
+  
+  @media (max-width: 1200px) {
+    max-width: 1100px;
+    gap: 24px;
+  }
   
   @media (max-width: 992px) {
     flex-direction: column-reverse;
-    gap: 3rem;
+    gap: 2.5rem;
     margin-top: 40px;
   }
   
   @media (max-width: 768px) {
-    width: 100%;
+    gap: 2rem;
+    margin-top: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 1.5rem;
   }
 `;
 
@@ -382,15 +433,34 @@ const LogoContainer = styled(motion.div)`
   justify-content: center;
   align-items: center;
   position: relative;
+  max-height: 500px;
+  aspect-ratio: 1/1;
+  
+  @media (max-width: 1200px) {
+    flex: 0 0 45%;
+    max-height: 450px;
+  }
   
   @media (max-width: 992px) {
     width: 80%;
     max-width: 400px;
+    max-height: 400px;
+  }
+  
+  @media (max-width: 768px) {
+    width: 70%;
+    max-width: 350px;
+    max-height: 350px;
   }
   
   @media (max-width: 480px) {
     width: 90%;
-    max-width: 300px;
+    max-width: 280px;
+    max-height: 280px;
+  }
+  
+  @media (max-height: 700px) {
+    max-height: 300px;
   }
   
   &::after {
@@ -410,6 +480,19 @@ const EnhancedLogo = styled.img`
   filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.2));
   animation: ${float} 6s ease-in-out infinite;
   transform-style: preserve-3d;
+  display: block;
+  
+  @media (max-width: 992px) {
+    animation-duration: 5s;
+  }
+  
+  @media (max-width: 480px) {
+    animation-duration: 4s;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 const LogoShadow = styled.div`
@@ -419,6 +502,14 @@ const LogoShadow = styled.div`
   margin: 0 auto;
   border-radius: 50%;
   transform-origin: center center;
+  
+  @media (max-width: 480px) {
+    height: 15px;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
 `;
 
 const LogoSkeleton = styled.div`
@@ -433,6 +524,11 @@ const LogoSkeleton = styled.div`
   );
   background-size: 200% 100%;
   animation: ${shimmer} 1.5s infinite;
+  
+  @media (prefers-reduced-motion: reduce) {
+    background: ${({ theme }) => theme.backgroundAlt};
+    animation: none;
+  }
 `;
 
 const ColoredAccent = styled.span`
@@ -459,6 +555,12 @@ const ColoredAccent = styled.span`
     background-color: ${({ theme }) => theme.primary}50;
     transform: skewX(-10deg);
   }
+  
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      transition: none;
+    }
+  }
 `;
 
 const HeroGreeting = styled(motion.div)`
@@ -469,6 +571,7 @@ const HeroGreeting = styled(motion.div)`
   display: inline-flex;
   align-items: center;
   gap: 15px;
+  ${'' /* flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'}; */}
   
   &::before {
     content: '';
@@ -480,10 +583,15 @@ const HeroGreeting = styled(motion.div)`
       width: 25px;
     }
   }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 0.7rem;
+    gap: 10px;
+  }
 `;
 
 const HeroName = styled(motion.h1)`
-  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-size: clamp(2.5rem, 6vw, 5rem);
   margin-bottom: 1rem;
   background: linear-gradient(135deg, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
   -webkit-background-clip: text;
@@ -494,39 +602,63 @@ const HeroName = styled(motion.h1)`
   letter-spacing: -0.02em;
   font-weight: 800;
   
+  @media (max-width: 768px) {
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    margin-bottom: 0.8rem;
+  }
+  
   @media (max-width: 480px) {
-    font-size: clamp(2rem, 8vw, 3rem);
+    font-size: clamp(2rem, 7vw, 3rem);
+    margin-bottom: 0.6rem;
   }
 `;
 
 const HeroTitle = styled(motion.h2)`
-  font-size: clamp(1.3rem, 5vw, 2.5rem);
+  font-size: clamp(1.3rem, 4vw, 2.5rem);
   margin-bottom: 1.5rem;
   color: ${({ theme }) => theme.textAlt};
   line-height: 1.2;
   
+  @media (max-width: 768px) {
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    margin-bottom: 1.2rem;
+  }
+  
   @media (max-width: 480px) {
-    font-size: clamp(1.1rem, 5vw, 1.8rem);
+    font-size: clamp(1.1rem, 4vw, 1.8rem);
+    margin-bottom: 1rem;
   }
 `;
 
 const HeroDescription = styled(motion.p)`
-  font-size: clamp(1rem, 3vw, 1.2rem);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
   max-width: 600px;
   margin-bottom: 2.5rem;
   line-height: 1.7;
   position: relative;
-  padding-left: 20px;
-  border-left: 3px solid;
+  padding-left: ${props => props.isRTL ? '0' : '20px'};
+  padding-right: ${props => props.isRTL ? '20px' : '0'};
+  border-left: ${props => props.isRTL ? 'none' : '3px solid'};
+  border-right: ${props => props.isRTL ? '3px solid' : 'none'};
   border-image: linear-gradient(
     to bottom,
     ${({ theme }) => theme.primary},
     ${({ theme }) => theme.secondary}
   ) 1;
   
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     margin-bottom: 2rem;
-    padding-left: 15px;
+    padding-left: ${props => props.isRTL ? '0' : '15px'};
+    padding-right: ${props => props.isRTL ? '15px' : '0'};
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 1.8rem;
+    padding-left: ${props => props.isRTL ? '0' : '12px'};
+    padding-right: ${props => props.isRTL ? '12px' : '0'};
+    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
   }
 `;
 
@@ -535,6 +667,11 @@ const CTAContainer = styled(motion.div)`
   gap: 1.5rem;
   align-items: center;
   flex-wrap: wrap;
+  ${'' /* flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'}; */}
+  
+  @media (max-width: 768px) {
+    gap: 1.2rem;
+  }
   
   @media (max-width: 480px) {
     gap: 1rem;
@@ -567,13 +704,14 @@ const buttonGradient = keyframes`
 `;
 
 const CTASecondary = styled(Link)`
-  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   color: ${({ theme }) => theme.textAlt};
   text-decoration: none;
   position: relative;
-  padding: 8px 16px;
+  padding: 10px 18px;
   transition: all 0.3s ease;
-  border-radius: 4px;
+  border-radius: 6px;
+  white-space: nowrap;
   
   &:hover {
     background: ${({ theme }) => theme.backgroundAlt};
@@ -585,14 +723,19 @@ const CTASecondary = styled(Link)`
     position: absolute;
     width: 0;
     height: 2px;
-    bottom: 4px;
-    left: 16px;
+    bottom: 6px;
+    left: 18px;
     background-color: ${({ theme }) => theme.primary};
     transition: width 0.3s ease;
   }
   
   &:hover::after {
-    width: calc(100% - 32px);
+    width: calc(100% - 36px);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 9px 16px;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
   }
   
   @media (max-width: 480px) {
@@ -604,6 +747,22 @@ const CTASecondary = styled(Link)`
     
     &:hover {
       background: ${({ theme }) => theme.backgroundAlt};
+    }
+    
+    &::after {
+      bottom: 5px;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    
+    &::after {
+      transition: none;
+    }
+    
+    &:hover {
+      transform: none;
     }
   }
 `;
@@ -624,13 +783,16 @@ const StyledLink = styled(Link)`
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   font-weight: 600;
   cursor: pointer;
   transition: 0.3s ease;
   position: relative;
   overflow: hidden;
   animation: ${buttonGradient} 5s ease infinite;
+  display: flex;
+  align-items: center;
+  flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'};
   
   &::before {
     content: '';
@@ -658,36 +820,63 @@ const StyledLink = styled(Link)`
   }
   
   &:hover svg {
-    transform: translateX(4px);
+    transform: translateX(${({ isRTL }) => isRTL ? '-4px' : '4px'});
+  }
+  
+  @media (max-width: 768px) {
+    padding: clamp(0.7rem, 2vw, 0.9rem) clamp(1.6rem, 4vw, 2rem);
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
   }
   
   @media (max-width: 480px) {
     width: 100%;
     justify-content: center;
-    padding: 1rem 1.5rem;
+    padding: 0.9rem 1.5rem;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transition: background-color 0.3s;
+    
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    
+    &::before {
+      display: none;
+    }
+    
+    svg {
+      transition: none;
+    }
+    
+    &:hover svg {
+      transform: none;
+    }
   }
 `;
 
 const ScrollIndicator = styled(motion.div)`
   position: absolute;
-  bottom: 40px;
+  bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   color: ${({ theme }) => theme.textAlt};
-  font-size: 0.9rem;
+  font-size: 1rem;
   
   p {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     opacity: 0.8;
     font-weight: 500;
   }
   
   .mouse {
-    width: 26px;
-    height: 40px;
+    width: 28px;
+    height: 44px;
     border: 2px solid ${({ theme }) => theme.textAlt};
     border-radius: 20px;
     position: relative;
@@ -695,11 +884,11 @@ const ScrollIndicator = styled(motion.div)`
     &::before {
       content: '';
       position: absolute;
-      top: 8px;
+      top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
-      height: 8px;
+      width: 5px;
+      height: 10px;
       background: ${({ theme }) => theme.primary};
       border-radius: 4px;
       will-change: transform, opacity;
@@ -707,26 +896,52 @@ const ScrollIndicator = styled(motion.div)`
     }
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     bottom: 20px;
     
     p {
-      font-size: 0.8rem;
+      font-size: 0.95rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    bottom: 15px;
+    
+    p {
+      font-size: 0.9rem;
+      margin-bottom: 10px;
     }
     
     .mouse {
-      width: 20px;
-      height: 32px;
+      width: 24px;
+      height: 38px;
       
       &::before {
-        width: 3px;
-        height: 6px;
+        width: 4px;
+        height: 8px;
       }
+    }
+  }
+  
+  @media (max-width: 480px) {
+    p {
+      display: none;
+    }
+    
+    .mouse {
+      width: 22px;
+      height: 34px;
     }
   }
   
   @media (max-height: 700px) {
     display: none;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .mouse::before {
+      animation: none;
+    }
   }
 `;
 
@@ -734,8 +949,17 @@ const HeroContent = styled(motion.div)`
   flex: 0 0 55%;
   text-align: ${({ isRTL }) => isRTL ? 'right' : 'left'};
   
+  @media (max-width: 1200px) {
+    flex: 0 0 50%;
+  }
+  
   @media (max-width: 992px) {
     width: 100%;
+    max-width: 600px;
+  }
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
   }
 `;
 
@@ -748,6 +972,20 @@ const Hero = () => {
   const [particleCount, setParticleCount] = useState(20);
   const [ref1, inView1] = useInView({ triggerOnce: true, threshold: 0.1 });
   const [ref2, inView2] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [reducedMotion, setReducedMotion] = useState(false);
+  
+  // Check for reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mediaQuery.matches);
+    
+    const handleChange = (e) => {
+      setReducedMotion(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
   
   // Calculate optimal particle count based on device capability
   useEffect(() => {
@@ -757,7 +995,9 @@ const Hero = () => {
         ? navigator.hardwareConcurrency <= 4
         : true;
       
-      if (width < 768 || isLowEndDevice) {
+      if (reducedMotion) {
+        setParticleCount(5); // Minimal particles for reduced motion
+      } else if (width < 768 || isLowEndDevice) {
         setParticleCount(10);
       } else if (width < 1200) {
         setParticleCount(15);
@@ -770,7 +1010,7 @@ const Hero = () => {
     window.addEventListener('resize', handleResize);
     
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [reducedMotion]);
   
   // Start animations when in view
   useEffect(() => {
@@ -786,9 +1026,9 @@ const Hero = () => {
       opacity: 1, 
       x: 0,
       transition: {
-        duration: 0.8,
+        duration: reducedMotion ? 0.3 : 0.8,
         ease: [0.25, 0.1, 0.25, 1.0],
-        staggerChildren: 0.1
+        staggerChildren: reducedMotion ? 0.05 : 0.1
       }
     }
   };
@@ -800,9 +1040,9 @@ const Hero = () => {
       y: 0, 
       scale: 1,
       transition: { 
-        duration: 0.9, 
+        duration: reducedMotion ? 0.4 : 0.9, 
         ease: [0.25, 0.1, 0.25, 1.0],
-        delay: 0.3
+        delay: reducedMotion ? 0.1 : 0.3
       }
     }
   };
@@ -816,9 +1056,10 @@ const Hero = () => {
       <Particles count={particleCount} />
       
       <HeroContainer 
+        isRTL={isRTL}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
+        transition={{ duration: reducedMotion ? 0.5 : 1 }}
       >
         <HeroContent
           ref={ref1}
@@ -834,7 +1075,7 @@ const Hero = () => {
               visible: { 
                 opacity: 1, 
                 x: 0,
-                transition: { duration: 0.6 }
+                transition: { duration: reducedMotion ? 0.3 : 0.6 }
               }
             }}
           >
@@ -848,8 +1089,8 @@ const Hero = () => {
                 opacity: 1, 
                 y: 0,
                 transition: { 
-                  duration: 0.7, 
-                  delay: 0.2,
+                  duration: reducedMotion ? 0.4 : 0.7, 
+                  delay: reducedMotion ? 0.1 : 0.2,
                   ease: [0.25, 0.1, 0.25, 1.0] 
                 }
               }
@@ -861,7 +1102,7 @@ const Hero = () => {
           <HeroTitle>
             <TextReveal 
               text={subtitleWords} 
-              delay={0.5}
+              delay={reducedMotion ? 0.2 : 0.5}
               isColor={true}
             />
           </HeroTitle>
@@ -874,8 +1115,8 @@ const Hero = () => {
                 opacity: 1, 
                 x: 0,
                 transition: { 
-                  duration: 0.7, 
-                  delay: 0.8,
+                  duration: reducedMotion ? 0.4 : 0.7, 
+                  delay: reducedMotion ? 0.3 : 0.8,
                   ease: [0.25, 0.1, 0.25, 1.0] 
                 }
               }
@@ -892,18 +1133,18 @@ const Hero = () => {
                 opacity: 1, 
                 y: 0,
                 transition: { 
-                  duration: 0.7, 
-                  delay: 1,
+                  duration: reducedMotion ? 0.4 : 0.7, 
+                  delay: reducedMotion ? 0.4 : 1,
                   ease: [0.25, 0.1, 0.25, 1.0]
                 }
               }
             }}
           >
             <CTAButton
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={reducedMotion ? {} : { scale: 1.05 }}
+              whileTap={reducedMotion ? {} : { scale: 0.95 }}
             >
-              <StyledLink to="/projects">
+              <StyledLink to="/projects" isRTL={isRTL}>
                 {isRTL ? (
                   <>
                     <FaArrowLeft />
@@ -942,7 +1183,7 @@ const Hero = () => {
       <ScrollIndicator
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
+        transition={{ delay: reducedMotion ? 0.5 : 1.5, duration: reducedMotion ? 0.4 : 0.8 }}
       >
         <p>{t('hero.scroll') || 'Scroll down'}</p>
         <div className="mouse"></div>
