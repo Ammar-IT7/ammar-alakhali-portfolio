@@ -6,14 +6,10 @@ import { Helmet } from 'react-helmet';
 import styled, { keyframes } from 'styled-components';
 
 // Lazy load components with named exports for better debugging
-const About = lazy(() => import('../components/sections/AboutSection')
-  .then(module => ({ default: module.AboutSection })));
-const Skills = lazy(() => import('../components/sections/Skills')
-  .then(module => ({ default: module.Skills })));
-const Projects = lazy(() => import('../components/sections/ProjectsSection')
-  .then(module => ({ default: module.ProjectsSection })));
-const Contact = lazy(() => import('../components/sections/ContactSection')
-  .then(module => ({ default: module.ContactSection })));
+const About = lazy(() => import('../components/sections/AboutSection'));
+const Skills = lazy(() => import('../components/sections/Skills'));
+const Projects = lazy(() => import('../components/sections/ProjectsSection'));
+const Contact = lazy(() => import('../components/sections/ContactSection'));
 
 const shimmer = keyframes`
   0% { background-position: -200% 0; }
