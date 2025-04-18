@@ -1,44 +1,67 @@
-import React, { useContext, useRef, useEffect, useState, memo, useMemo, useCallback } from 'react';
+import React, { useContext, useRef, useEffect, useState, memo, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useAnimation, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 import { LanguageContext } from '../../contexts/LanguageContext';
 import { useInView } from 'react-intersection-observer';
-import logo from '../../assets/images/company-logo.png'; // Import the logo
+import logo from '../../assets/images/company-logo.png';
 
-// Enhanced particle effects
-const generateParticle = (index, count) => {
-  // Calculate properties with more variation
-  const size = Math.random() * 10 + 2;
-  const duration = Math.random() * 20 + 10;
-  const delay = Math.random() * 5;
-  
-  // Create more varied positioning based on index
-  const angle = (index / count) * Math.PI * 2;
-  const radius = Math.random() * 50 + 30;
-  const x = 50 + Math.cos(angle) * radius;
-  const y = 50 + Math.sin(angle) * radius;
-  
-  return { size, duration, delay, x, y };
-};
-
-// Memoized Particles component with advanced effects
+// Advanced particle system with better performance
 const Particles = memo(({ count = 30 }) => {
-  // Generate particles with better distribution
-  const particles = useMemo(() => {
-    return [...Array(count)].map((_, i) => {
-      const { size, duration, delay, x, y } = generateParticle(i, count);
+  const [particles, setParticles] = useState([]);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  
+  useEffect(() => {
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleMotionPreference = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handleMotionPreference);
+    
+    // Generate optimized particles only if motion is allowed
+    if (!mediaQuery.matches) {
+      const newParticles = Array.from({ length: count }, (_, i) => {
+        const size = Math.random() * 8 + 2;
+        const angle = (i / count) * Math.PI * 2;
+        const radius = Math.random() * 45 + 20;
+        const x = 50 + Math.cos(angle) * radius;
+        const y = 50 + Math.sin(angle) * radius;
+        const duration = Math.random() * 15 + 8;
+        const delay = Math.random() * 5;
+        
+        return { id: i, size, x, y, duration, delay };
+      });
       
-      return (
+      setParticles(newParticles);
+    } else {
+      setParticles([]);
+    }
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleMotionPreference);
+    };
+  }, [count]);
+  
+  if (prefersReducedMotion || particles.length === 0) return null;
+  
+  return (
+    <ParticlesContainer>
+      {particles.map(particle => (
         <Particle
-          key={i}
-          size={size}
+          key={particle.id}
+          size={particle.size}
+          style={{ 
+            left: `${particle.x}%`, 
+            top: `${particle.y}%`
+          }}
+          initial={{ scale: 0, opacity: 0 }}
           animate={{
-            y: [0, -20, 0],
-            x: [0, Math.random() * 10 - 5, 0],
-            opacity: [0, 0.7, 0],
             scale: [0, 1, 0],
+            opacity: [0, 0.8, 0],
+            y: [0, -20, 0],
+            x: [0, Math.random() * 15 - 7.5, 0],
             filter: [
               'blur(2px)',
               'blur(0px)',
@@ -46,27 +69,57 @@ const Particles = memo(({ count = 30 }) => {
             ]
           }}
           transition={{
-            duration,
+            duration: particle.duration,
+            delay: particle.delay,
             repeat: Infinity,
-            delay,
+            repeatDelay: Math.random() * 2,
             ease: "easeInOut"
           }}
-          style={{ 
-            left: `${x}%`, 
-            top: `${y}%`,
-            boxShadow: `0 0 ${size * 2}px rgba(var(--primary-rgb), 0.4)`
-          }}
         />
-      );
-    });
-  }, [count]);
-
-  return <ParticlesContainer>{particles}</ParticlesContainer>;
+      ))}
+    </ParticlesContainer>
+  );
 });
 
-// Staggered loading text animation for the subtitle
+// Enhanced text reveal animation
 const TextReveal = ({ text, delay = 0, isColor = false, ...props }) => {
   const words = text.split(' ');
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleMotionPreference = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handleMotionPreference);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleMotionPreference);
+    };
+  }, []);
+  
+  if (prefersReducedMotion) {
+    return (
+      <div {...props}>
+        {words.map((word, i) => (
+          <span
+            key={i}
+            className="word-wrapper"
+            style={{ 
+              display: 'inline-block',
+              marginRight: '0.4em',
+              marginBottom: '0.2em',
+              color: isColor && i === 1 ? 'var(--primary)' : 'inherit'
+            }}
+          >
+            {isColor && i === 1 ? (
+              <ColoredAccent>{word}</ColoredAccent>
+            ) : word}
+          </span>
+        ))}
+      </div>
+    );
+  }
   
   return (
     <motion.div
@@ -91,7 +144,13 @@ const TextReveal = ({ text, delay = 0, isColor = false, ...props }) => {
             visible: {
               y: 0,
               opacity: 1,
-              transition: { duration: 0.4, ease: [0.2, 0.65, 0.3, 0.9] }
+              transition: { 
+                duration: 0.4, 
+                ease: [0.2, 0.65, 0.3, 0.9],
+                type: "spring",
+                stiffness: 300,
+                damping: 24
+              }
             }
           }}
           className="word-wrapper"
@@ -111,39 +170,70 @@ const TextReveal = ({ text, delay = 0, isColor = false, ...props }) => {
   );
 };
 
-// Enhanced 3D logo animation component
+// Advanced 3D interactive logo
 const Logo3D = ({ src, alt, ...props }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const imageRef = useRef(null);
+  const containerRef = useRef(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   
-  // Transform rotation based on mouse position
-  const rotateX = useTransform(y, [-100, 100], [10, -10]);
-  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
+  // Optimized transforms with springs for smoother motion
+  const rotateX = useSpring(useTransform(y, [-100, 100], [15, -15]), {
+    stiffness: 300,
+    damping: 30
+  });
+  
+  const rotateY = useSpring(useTransform(x, [-100, 100], [-15, 15]), {
+    stiffness: 300,
+    damping: 30
+  });
+  
+  const scale = useSpring(1, {
+    stiffness: 200,
+    damping: 20
+  });
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleMotionPreference = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handleMotionPreference);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleMotionPreference);
+    };
+  }, []);
   
   const handleMouseMove = useCallback((e) => {
-    if (!isHovered) return;
+    if (!isHovered || prefersReducedMotion) return;
     
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = containerRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     
-    x.set(e.clientX - centerX);
-    y.set(e.clientY - centerY);
-  }, [isHovered, x, y]);
+    // Calculate distance from center for more natural movement
+    x.set((e.clientX - centerX) / 3);
+    y.set((e.clientY - centerY) / 3);
+  }, [isHovered, x, y, prefersReducedMotion]);
   
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
-    // Animate back to center
+    // Smoothly reset to center
     x.set(0);
     y.set(0);
-  }, [x, y]);
+    scale.set(1);
+  }, [x, y, scale]);
   
   const handleMouseEnter = useCallback(() => {
-    setIsHovered(true);
-  }, []);
+    if (!prefersReducedMotion) {
+      setIsHovered(true);
+      scale.set(1.05);
+    }
+  }, [scale, prefersReducedMotion]);
 
   useEffect(() => {
     if (imageRef.current && imageRef.current.complete) {
@@ -153,16 +243,18 @@ const Logo3D = ({ src, alt, ...props }) => {
 
   return (
     <motion.div 
+      ref={containerRef}
       style={{ 
         position: 'relative',
         width: '100%',
         height: '100%',
         perspective: '1200px',
-        transformStyle: 'preserve-3d'
+        cursor: prefersReducedMotion ? 'default' : 'pointer'
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
+      whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
     >
       {!isLoaded && (
         <LogoSkeleton 
@@ -172,7 +264,7 @@ const Logo3D = ({ src, alt, ...props }) => {
             left: 0,
             width: '100%',
             height: '100%',
-            borderRadius: '10px'
+            borderRadius: '12px'
           }} 
         />
       )}
@@ -181,11 +273,17 @@ const Logo3D = ({ src, alt, ...props }) => {
         style={{
           width: '100%',
           height: '100%',
-          rotateX: rotateX,
-          rotateY: rotateY,
-          transformStyle: 'preserve-3d'
+          rotateX: prefersReducedMotion ? 0 : rotateX,
+          rotateY: prefersReducedMotion ? 0 : rotateY,
+          scale: scale,
+          transformStyle: 'preserve-3d',
+          transformOrigin: 'center center'
         }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 400, 
+          damping: 30 
+        }}
       >
         <EnhancedLogo
           ref={imageRef}
@@ -194,38 +292,62 @@ const Logo3D = ({ src, alt, ...props }) => {
           onLoad={() => setIsLoaded(true)}
           style={{ 
             opacity: isLoaded ? 1 : 0, 
-            transform: 'translateZ(20px)'
+            transform: 'translateZ(30px)',
+            filter: isHovered && !prefersReducedMotion ? 
+              'drop-shadow(0 30px 40px rgba(0, 0, 0, 0))' : 
+              'drop-shadow(0 20px 30px rgba(0, 0, 0, 0))',
+            transition: 'filter 0.3s ease'
           }}
           {...props}
         />
         
-        {isLoaded && (
+        {isLoaded && !prefersReducedMotion && (
           <LogoShadow 
             style={{
-              transform: 'translateZ(-20px) rotateX(90deg) translateY(40px) scale(0.8)',
-              filter: 'blur(20px)',
-              opacity: 0.4
+              transform: 'translateZ(-40px) rotateX(90deg) translateY(60px) scale(0.7)',
+              filter: 'blur(25px)',
+              opacity: isHovered ? 0.6 : 0.4,
+              transition: 'opacity 0.3s ease, filter 0.3s ease'
             }}
           />
         )}
       </motion.div>
+      
+      {/* Add interactive glow effect */}
+      {isLoaded && !prefersReducedMotion && (
+        <motion.div
+          style={{
+            position: 'absolute',
+            top: '-10%',
+            left: '-10%',
+            width: '120%',
+            height: '120%',
+            borderRadius: '50%',
+            background: `radial-gradient(circle at center, ${isHovered ? 'rgba(74, 37, 170, 0.2)' : 'rgba(74, 37, 170, 0.1)'} 0%, transparent 70%)`,
+            opacity: isHovered ? 1 : 0.6,
+            transition: 'background 0.3s ease, opacity 0.3s ease',
+            pointerEvents: 'none',
+            zIndex: -1
+          }}
+        />
+      )}
     </motion.div>
   );
 };
 
-// Keyframes animations
+// Enhanced animations with better performance
 const pulse = keyframes`
   0% {
     transform: scale(1);
-    opacity: 0.7;
+    opacity: 0.6;
   }
   50% {
-    transform: scale(1.1);
+    transform: scale(1.05);
     opacity: 0.9;
   }
   100% {
     transform: scale(1);
-    opacity: 0.7;
+    opacity: 0.6;
   }
 `;
 
@@ -234,7 +356,7 @@ const float = keyframes`
     transform: translateY(0px) rotate(0deg);
   }
   50% {
-    transform: translateY(-20px) rotate(2deg);
+    transform: translateY(-15px) rotate(1deg);
   }
   100% {
     transform: translateY(0px) rotate(0deg);
@@ -252,17 +374,17 @@ const shimmer = keyframes`
 
 const wave = keyframes`
   0% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   50% {
-    transform: translateY(-15px);
+    transform: translateY(-15px) scale(1.1);
   }
   100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 `;
 
-// Styled components with enhanced animations
+// Styled component with improved responsiveness and animations
 const ParticlesContainer = styled.div`
   position: absolute;
   width: 100%;
@@ -289,26 +411,27 @@ const HeroSection = styled.section`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px 20px;
+  padding: min(120px, 12vh) 20px min(60px, 6vh);
   position: relative;
   overflow: hidden;
+  isolation: isolate;
   
   @media (max-width: 1200px) {
-    padding: 70px 24px 60px;
+    padding: min(100px, 10vh) 24px min(60px, 6vh);
   }
   
   @media (max-width: 768px) {
-    padding: 60px 16px 50px;
+    padding: min(80px, 8vh) 16px min(40px, 4vh);
     align-items: flex-start;
     min-height: calc(100vh - 40px);
   }
   
   @media (max-width: 480px) {
-    padding: 50px 12px 40px;
+    padding: min(60px, 6vh) 12px min(30px, 3vh);
   }
   
   @media (max-height: 700px) {
-    padding-top: 40px;
+    padding-top: max(40px, 6vh);
     min-height: auto;
   }
 `;
@@ -326,33 +449,33 @@ const HeroBackground = styled.div`
   &::after {
     content: '';
     position: absolute;
-    width: 800px;
-    height: 800px;
+    width: min(800px, 80vw);
+    height: min(800px, 80vw);
     border-radius: 50%;
     background: radial-gradient(circle, ${({ theme }) => theme.primary}, transparent 70%);
-    filter: blur(40px);
+    filter: blur(min(40px, 5vw));
     top: -400px;
     ${({ isRTL }) => isRTL ? 'left: -200px' : 'right: -200px'};
     will-change: transform, opacity;
     animation: ${pulse} 15s infinite alternate;
     
     @media (max-width: 1200px) {
-      width: 600px;
-      height: 600px;
+      width: min(600px, 75vw);
+      height: min(600px, 75vw);
       top: -300px;
       ${({ isRTL }) => isRTL ? 'left: -180px' : 'right: -180px'};
     }
     
     @media (max-width: 768px) {
-      width: 500px;
-      height: 500px;
+      width: min(500px, 70vw);
+      height: min(500px, 70vw);
       top: -250px;
       ${({ isRTL }) => isRTL ? 'left: -150px' : 'right: -150px'};
     }
     
     @media (max-width: 480px) {
-      width: 400px;
-      height: 400px;
+      width: min(400px, 80vw);
+      height: min(400px, 80vw);
       top: -200px;
       ${({ isRTL }) => isRTL ? 'left: -120px' : 'right: -120px'};
     }
@@ -361,69 +484,74 @@ const HeroBackground = styled.div`
   &::before {
     content: '';
     position: absolute;
-    width: 600px;
-    height: 600px;
+    width: min(600px, 70vw);
+    height: min(600px, 70vw);
     border-radius: 50%;
     background: radial-gradient(circle, ${({ theme }) => theme.secondary}, transparent 70%);
-    filter: blur(40px);
+    filter: blur(min(40px, 5vw));
     bottom: -300px;
     ${({ isRTL }) => isRTL ? 'right: -100px' : 'left: -100px'};
     will-change: transform, opacity;
     animation: ${pulse} 18s infinite alternate-reverse;
     
     @media (max-width: 1200px) {
-      width: 500px;
-      height: 500px;
+      width: min(500px, 65vw);
+      height: min(500px, 65vw);
       bottom: -250px;
       ${({ isRTL }) => isRTL ? 'right: -120px' : 'left: -120px'};
     }
     
     @media (max-width: 768px) {
-      width: 400px;
-      height: 400px;
+      width: min(400px, 60vw);
+      height: min(400px, 60vw);
       bottom: -200px;
       ${({ isRTL }) => isRTL ? 'right: -100px' : 'left: -100px'};
     }
     
     @media (max-width: 480px) {
-      width: 300px;
-      height: 300px;
+      width: min(300px, 65vw);
+      height: min(300px, 65vw);
       bottom: -150px;
       ${({ isRTL }) => isRTL ? 'right: -80px' : 'left: -80px'};
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    &::after, &::before {
+      animation: none;
     }
   }
 `;
 
 const HeroContainer = styled(motion.div)`
   width: 100%;
-  max-width: 1400px;
+  max-width: min(1400px, 95vw);
   display: flex;
-  ${'' /* flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'}; */}
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   position: relative;
   z-index: 2;
-  gap: 30px;
+  gap: min(30px, 3vw);
   
   @media (max-width: 1200px) {
-    max-width: 1100px;
-    gap: 24px;
+    max-width: min(1100px, 95vw);
+    gap: min(24px, 2.5vw);
   }
   
   @media (max-width: 992px) {
     flex-direction: column-reverse;
-    gap: 2.5rem;
-    margin-top: 40px;
+    gap: min(2.5rem, 5vh);
+    margin-top: min(40px, 5vh);
   }
   
   @media (max-width: 768px) {
-    gap: 2rem;
-    margin-top: 20px;
+    gap: min(2rem, 4vh);
+    margin-top: min(20px, 3vh);
   }
   
   @media (max-width: 480px) {
-    gap: 1.5rem;
+    gap: min(1.5rem, 3vh);
   }
 `;
 
@@ -433,34 +561,34 @@ const LogoContainer = styled(motion.div)`
   justify-content: center;
   align-items: center;
   position: relative;
-  max-height: 500px;
+  max-height: min(500px, 50vh);
   aspect-ratio: 1/1;
   
   @media (max-width: 1200px) {
     flex: 0 0 45%;
-    max-height: 450px;
+    max-height: min(450px, 45vh);
   }
   
   @media (max-width: 992px) {
     width: 80%;
-    max-width: 400px;
-    max-height: 400px;
+    max-width: min(400px, 80vw);
+    max-height: min(400px, 40vh);
   }
   
   @media (max-width: 768px) {
     width: 70%;
-    max-width: 350px;
-    max-height: 350px;
+    max-width: min(350px, 75vw);
+    max-height: min(350px, 35vh);
   }
   
   @media (max-width: 480px) {
     width: 90%;
-    max-width: 280px;
-    max-height: 280px;
+    max-width: min(280px, 80vw);
+    max-height: min(280px, 30vh);
   }
   
   @media (max-height: 700px) {
-    max-height: 300px;
+    max-height: min(300px, 40vh);
   }
   
   &::after {
@@ -515,7 +643,7 @@ const LogoShadow = styled.div`
 const LogoSkeleton = styled.div`
   width: 100%;
   height: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   background: linear-gradient(
     90deg,
     ${({ theme }) => theme.backgroundAlt},
@@ -531,6 +659,7 @@ const LogoSkeleton = styled.div`
   }
 `;
 
+// Enhanced colored accent with interactive hover effect
 const ColoredAccent = styled.span`
   display: inline-block;
   position: relative;
@@ -564,14 +693,13 @@ const ColoredAccent = styled.span`
 `;
 
 const HeroGreeting = styled(motion.div)`
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
   margin-bottom: 1rem;
   color: ${({ theme }) => theme.primary};
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 15px;
-  ${'' /* flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'}; */}
   
   &::before {
     content: '';
@@ -587,13 +715,33 @@ const HeroGreeting = styled(motion.div)`
   @media (max-width: 480px) {
     margin-bottom: 0.7rem;
     gap: 10px;
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+  }
+`;
+
+// Added text gradient animation
+const gradientAnimation = keyframes`
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 `;
 
 const HeroName = styled(motion.h1)`
   font-size: clamp(2.5rem, 6vw, 5rem);
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
+  background: linear-gradient(
+    135deg, 
+    ${({ theme }) => theme.primary}, 
+    ${({ theme }) => theme.secondary}, 
+    ${({ theme }) => theme.primary}
+  );
+  background-size: 200% 200%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -601,6 +749,7 @@ const HeroName = styled(motion.h1)`
   position: relative;
   letter-spacing: -0.02em;
   font-weight: 800;
+  animation: ${gradientAnimation} 8s ease infinite;
   
   @media (max-width: 768px) {
     font-size: clamp(2.2rem, 6vw, 3.5rem);
@@ -610,6 +759,11 @@ const HeroName = styled(motion.h1)`
   @media (max-width: 480px) {
     font-size: clamp(2rem, 7vw, 3rem);
     margin-bottom: 0.6rem;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-size: 100% 100%;
   }
 `;
 
@@ -667,7 +821,6 @@ const CTAContainer = styled(motion.div)`
   gap: 1.5rem;
   align-items: center;
   flex-wrap: wrap;
-  ${'' /* flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'}; */}
   
   @media (max-width: 768px) {
     gap: 1.2rem;
@@ -691,6 +844,7 @@ const CTAButton = styled(motion.div)`
   }
 `;
 
+// Enhanced button animations
 const buttonGradient = keyframes`
   0% {
     background-position: 0% 50%;
@@ -703,6 +857,15 @@ const buttonGradient = keyframes`
   }
 `;
 
+const buttonShine = keyframes`
+  0% {
+    transform: translateX(-100%);
+  }
+  20%, 100% {
+    transform: translateX(100%);
+  }
+`;
+
 const CTASecondary = styled(Link)`
   font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   color: ${({ theme }) => theme.textAlt};
@@ -710,12 +873,14 @@ const CTASecondary = styled(Link)`
   position: relative;
   padding: 10px 18px;
   transition: all 0.3s ease;
-  border-radius: 6px;
+  border-radius: 8px;
   white-space: nowrap;
+  overflow: hidden;
   
   &:hover {
     background: ${({ theme }) => theme.backgroundAlt};
     transform: translateY(-2px);
+    color: ${({ theme }) => theme.text};
   }
   
   &::after {
@@ -792,7 +957,6 @@ const StyledLink = styled(Link)`
   animation: ${buttonGradient} 5s ease infinite;
   display: flex;
   align-items: center;
-  flex-direction: ${({ isRTL }) => isRTL ? 'row-reverse' : 'row'};
   
   &::before {
     content: '';
@@ -801,22 +965,26 @@ const StyledLink = styled(Link)`
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.5), transparent);
     transform: translateX(-100%);
+    animation: ${buttonShine} 3s 5s infinite;
+    z-index: 1;
   }
   
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px -5px ${({ theme }) => theme.primary}50;
-    
-    &::before {
-      transform: translateX(100%);
-      transition: transform 0.8s;
-    }
+    box-shadow: 
+      0 10px 25px -5px ${({ theme }) => theme.primary}50,
+      0 5px 10px ${({ theme }) => theme.secondary}30;
   }
   
   svg {
     transition: transform 0.3s ease;
+    z-index: 2;
+  }
+  
+  span {
+    z-index: 2;
   }
   
   &:hover svg {
@@ -838,13 +1006,13 @@ const StyledLink = styled(Link)`
     animation: none;
     transition: background-color 0.3s;
     
+    &::before {
+      display: none;
+    }
+    
     &:hover {
       transform: none;
       box-shadow: none;
-    }
-    
-    &::before {
-      display: none;
     }
     
     svg {
@@ -857,6 +1025,7 @@ const StyledLink = styled(Link)`
   }
 `;
 
+// Enhanced scroll indicator with animations
 const ScrollIndicator = styled(motion.div)`
   position: absolute;
   bottom: 25px;
@@ -963,7 +1132,7 @@ const HeroContent = styled(motion.div)`
   }
 `;
 
-// Enhanced Hero component
+// Enhanced Hero component with performance optimizations
 const Hero = () => {
   const { language, t } = useContext(LanguageContext);
   const isRTL = language === 'ar';
@@ -972,22 +1141,22 @@ const Hero = () => {
   const [particleCount, setParticleCount] = useState(20);
   const [ref1, inView1] = useInView({ triggerOnce: true, threshold: 0.1 });
   const [ref2, inView2] = useInView({ triggerOnce: true, threshold: 0.1 });
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   
   // Check for reduced motion preference
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(mediaQuery.matches);
+    setPrefersReducedMotion(mediaQuery.matches);
     
     const handleChange = (e) => {
-      setReducedMotion(e.matches);
+      setPrefersReducedMotion(e.matches);
     };
     
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
   
-  // Calculate optimal particle count based on device capability
+  // Calculate optimal particle count based on device capability and viewport
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
@@ -995,22 +1164,31 @@ const Hero = () => {
         ? navigator.hardwareConcurrency <= 4
         : true;
       
-      if (reducedMotion) {
-        setParticleCount(5); // Minimal particles for reduced motion
-      } else if (width < 768 || isLowEndDevice) {
-        setParticleCount(10);
-      } else if (width < 1200) {
-        setParticleCount(15);
-      } else {
-        setParticleCount(25);
-      }
+      // Check battery status if available
+      const isBatteryLow = 'getBattery' in navigator 
+        ? navigator.getBattery().then(battery => battery.level < 0.2)
+        : Promise.resolve(false);
+      
+      isBatteryLow.then(lowBattery => {
+        if (prefersReducedMotion) {
+          setParticleCount(0); // No particles for reduced motion
+        } else if (lowBattery || (width < 768 && isLowEndDevice)) {
+          setParticleCount(8); // Minimal particles for low-end devices
+        } else if (width < 768 || isLowEndDevice) {
+          setParticleCount(12);
+        } else if (width < 1200) {
+          setParticleCount(18);
+        } else {
+          setParticleCount(25);
+        }
+      });
     };
     
     handleResize();
     window.addEventListener('resize', handleResize);
     
     return () => window.removeEventListener('resize', handleResize);
-  }, [reducedMotion]);
+  }, [prefersReducedMotion]);
   
   // Start animations when in view
   useEffect(() => {
@@ -1019,30 +1197,31 @@ const Hero = () => {
     }
   }, [controls, inView1]);
 
-  // Animation variants
+  // Animation variants with reduced motion support
   const contentVariants = {
-    hidden: { opacity: 0, x: isRTL ? 50 : -50 },
+    hidden: { opacity: 0, x: isRTL ? 30 : -30 },
     visible: {
       opacity: 1, 
       x: 0,
       transition: {
-        duration: reducedMotion ? 0.3 : 0.8,
+        duration: prefersReducedMotion ? 0.3 : 0.8,
         ease: [0.25, 0.1, 0.25, 1.0],
-        staggerChildren: reducedMotion ? 0.05 : 0.1
+        staggerChildren: prefersReducedMotion ? 0.05 : 0.1,
+        when: "beforeChildren"
       }
     }
   };
 
   const logoVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: { 
       opacity: 1, 
       y: 0, 
       scale: 1,
       transition: { 
-        duration: reducedMotion ? 0.4 : 0.9, 
+        duration: prefersReducedMotion ? 0.4 : 0.9, 
         ease: [0.25, 0.1, 0.25, 1.0],
-        delay: reducedMotion ? 0.1 : 0.3
+        delay: prefersReducedMotion ? 0.1 : 0.2
       }
     }
   };
@@ -1059,7 +1238,7 @@ const Hero = () => {
         isRTL={isRTL}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: reducedMotion ? 0.5 : 1 }}
+        transition={{ duration: prefersReducedMotion ? 0.5 : 0.8 }}
       >
         <HeroContent
           ref={ref1}
@@ -1071,11 +1250,14 @@ const Hero = () => {
           <HeroGreeting
             isRTL={isRTL}
             variants={{
-              hidden: { opacity: 0, x: isRTL ? 20 : -20 },
+              hidden: { opacity: 0, x: isRTL ? 15 : -15 },
               visible: { 
                 opacity: 1, 
                 x: 0,
-                transition: { duration: reducedMotion ? 0.3 : 0.6 }
+                transition: { 
+                  duration: prefersReducedMotion ? 0.3 : 0.6,
+                  ease: "easeOut"
+                }
               }
             }}
           >
@@ -1084,14 +1266,17 @@ const Hero = () => {
           
           <HeroName
             variants={{
-              hidden: { opacity: 0, y: 20 },
+              hidden: { opacity: 0, y: 15 },
               visible: { 
                 opacity: 1, 
                 y: 0,
                 transition: { 
-                  duration: reducedMotion ? 0.4 : 0.7, 
-                  delay: reducedMotion ? 0.1 : 0.2,
-                  ease: [0.25, 0.1, 0.25, 1.0] 
+                  duration: prefersReducedMotion ? 0.4 : 0.7, 
+                  delay: prefersReducedMotion ? 0.1 : 0.15,
+                  ease: [0.25, 0.1, 0.25, 1.0],
+                  type: "spring",
+                  stiffness: 100,
+                  damping: 20
                 }
               }
             }}
@@ -1102,7 +1287,7 @@ const Hero = () => {
           <HeroTitle>
             <TextReveal 
               text={subtitleWords} 
-              delay={reducedMotion ? 0.2 : 0.5}
+              delay={prefersReducedMotion ? 0.2 : 0.4}
               isColor={true}
             />
           </HeroTitle>
@@ -1110,13 +1295,13 @@ const Hero = () => {
           <HeroDescription
             isRTL={isRTL}
             variants={{
-              hidden: { opacity: 0, x: isRTL ? 20 : -20 },
+              hidden: { opacity: 0, x: isRTL ? 15 : -15 },
               visible: { 
                 opacity: 1, 
                 x: 0,
                 transition: { 
-                  duration: reducedMotion ? 0.4 : 0.7, 
-                  delay: reducedMotion ? 0.3 : 0.8,
+                  duration: prefersReducedMotion ? 0.4 : 0.7, 
+                  delay: prefersReducedMotion ? 0.3 : 0.6,
                   ease: [0.25, 0.1, 0.25, 1.0] 
                 }
               }
@@ -1126,33 +1311,33 @@ const Hero = () => {
           </HeroDescription>
           
           <CTAContainer
-            isRTL={isRTL}
             variants={{
-              hidden: { opacity: 0, y: 30 },
+              hidden: { opacity: 0, y: 20 },
               visible: { 
                 opacity: 1, 
                 y: 0,
                 transition: { 
-                  duration: reducedMotion ? 0.4 : 0.7, 
-                  delay: reducedMotion ? 0.4 : 1,
+                  duration: prefersReducedMotion ? 0.4 : 0.7, 
+                  delay: prefersReducedMotion ? 0.4 : 0.8,
                   ease: [0.25, 0.1, 0.25, 1.0]
                 }
               }
             }}
           >
             <CTAButton
-              whileHover={reducedMotion ? {} : { scale: 1.05 }}
-              whileTap={reducedMotion ? {} : { scale: 0.95 }}
+              whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <StyledLink to="/projects" isRTL={isRTL}>
                 {isRTL ? (
                   <>
                     <FaArrowLeft />
-                    {t('hero.cta')}
+                    <span>{t('hero.cta')}</span>
                   </>
                 ) : (
                   <>
-                    {t('hero.cta')}
+                    <span>{t('hero.cta')}</span>
                     <FaArrowRight />
                   </>
                 )}
@@ -1183,7 +1368,7 @@ const Hero = () => {
       <ScrollIndicator
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: reducedMotion ? 0.5 : 1.5, duration: reducedMotion ? 0.4 : 0.8 }}
+        transition={{ delay: prefersReducedMotion ? 0.5 : 1.2, duration: prefersReducedMotion ? 0.4 : 0.8 }}
       >
         <p>{t('hero.scroll') || 'Scroll down'}</p>
         <div className="mouse"></div>

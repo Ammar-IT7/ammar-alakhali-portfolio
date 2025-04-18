@@ -1,10 +1,11 @@
 // src/pages/Home.js
 import React, { useEffect, useRef, Suspense, lazy, useState, useCallback, useContext } from 'react';
-import { motion, useScroll, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, AnimatePresence, useSpring, useTransform, useInView, useMotionValueEvent } from 'framer-motion';
 import Hero from '../components/sections/Hero';
 import { Helmet } from 'react-helmet';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { LanguageContext } from '../contexts/LanguageContext';
+import { debounce } from 'lodash';
 
 // Lazy load components with named exports for better debugging
 const About = lazy(() => import('../components/sections/AboutSection'));
@@ -12,6 +13,7 @@ const Skills = lazy(() => import('../components/sections/Skills'));
 const Projects = lazy(() => import('../components/sections/ProjectsSection'));
 const Contact = lazy(() => import('../components/sections/ContactSection'));
 
+// Optimized animations with better performance
 const shimmer = keyframes`
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -23,12 +25,19 @@ const progressAnimation = keyframes`
   100% { background-position: 0% 50%; }
 `;
 
-const pulse = keyframes`
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+const pulseLight = keyframes`
+  0% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.03); }
+  100% { opacity: 0.6; transform: scale(1); }
 `;
 
+const floatAnimation = keyframes`
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+`;
+
+// Advanced progress bar with glow and gradient
 const ProgressBar = styled(motion.div)`
   position: fixed;
   top: 0;
@@ -45,15 +54,29 @@ const ProgressBar = styled(motion.div)`
   animation: ${progressAnimation} 3s ease infinite;
   transform-origin: 0%;
   z-index: 1000;
-  filter: drop-shadow(0 0 5px ${({ theme }) => theme.primary}80);
+  filter: drop-shadow(0 0 8px ${({ theme }) => theme.primary}90);
   will-change: transform;
+  transform: scaleX(var(--scaleX, 0));
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
+    filter: blur(3px);
+    opacity: 0.8;
+  }
 `;
 
 const SectionWrapper = styled(motion.div)`
   width: 100%;
   overflow-x: hidden;
   position: relative;
-  padding: 80px 0;
+  padding: clamp(60px, 8vh, 100px) 0;
+  isolation: isolate;
   
   &::after {
     content: '';
@@ -61,18 +84,19 @@ const SectionWrapper = styled(motion.div)`
     top: 0;
     left: 0;
     right: 0;
-    height: 100px;
+    height: 150px;
     background: linear-gradient(to bottom, ${({ theme }) => theme.background}, transparent);
-    opacity: 0.7;
+    opacity: 0.8;
     pointer-events: none;
     z-index: 1;
   }
 
   @media (max-width: 768px) {
-    padding: 60px 0;
+    padding: clamp(40px, 5vh, 60px) 0;
   }
 `;
 
+// Enhanced loading components with animations
 const LoadingFallback = styled.div`
   display: flex;
   justify-content: center;
@@ -83,7 +107,7 @@ const LoadingFallback = styled.div`
   gap: 20px;
 `;
 
-const LoadingContainer = styled.div`
+const LoadingContainer = styled(motion.div)`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -91,11 +115,16 @@ const LoadingContainer = styled.div`
   gap: 25px;
   width: 85%;
   max-width: 400px;
-  padding: 30px;
-  background: ${({ theme }) => `${theme.backgroundAlt}30`};
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  background: ${({ theme }) => `${theme.backgroundAlt}40`};
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.15),
+    0 1px 1px rgba(255, 255, 255, 0.1) inset;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transform-style: preserve-3d;
+  perspective: 1000px;
 `;
 
 const LoadingText = styled.p`
@@ -112,17 +141,23 @@ const LoadingSubtext = styled.p`
   color: ${({ theme }) => theme.textAlt};
   margin: 0;
   text-align: center;
-  animation: ${pulse} 2s infinite ease-in-out;
+  animation: ${pulseLight} 2.5s infinite ease-in-out;
+`;
+
+const LoadingIconContainer = styled(motion.div)`
+  margin-bottom: 20px;
+  width: 60px;
+  height: 60px;
 `;
 
 const LoadingProgress = styled.div`
   width: 100%;
-  height: 8px;
-  background: ${({ theme }) => `${theme.backgroundAlt}80`};
+  height: 10px;
+  background: ${({ theme }) => `${theme.backgroundAlt}90`};
   border-radius: 20px;
   overflow: hidden;
   position: relative;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
   
   &::after {
     content: '';
@@ -137,12 +172,13 @@ const LoadingProgress = styled.div`
       ${({ theme }) => theme.secondary}
     );
     border-radius: 20px;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 15px ${({ theme }) => theme.primary}60;
   }
 `;
 
 const LoadingPercentage = styled.div`
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: ${({ theme }) => theme.primary};
   margin-top: 15px;
@@ -150,8 +186,10 @@ const LoadingPercentage = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  text-shadow: 0 2px 10px ${({ theme }) => theme.primary}40;
 `;
 
+// Enhanced scroll to top button with hover effects
 const ScrollToTopButton = styled(motion.button)`
   position: fixed;
   bottom: 30px;
@@ -167,13 +205,49 @@ const ScrollToTopButton = styled(motion.button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 
+    0 5px 20px rgba(0, 0, 0, 0.15),
+    0 3px 6px ${({ theme }) => theme.primary}40;
   outline: none;
   transform-origin: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
   
   svg {
     width: 20px;
     height: 20px;
+    transition: transform 0.3s ease;
+  }
+  
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  
+  &:hover::before {
+    transform: translateX(100%);
+  }
+  
+  &:hover {
+    background: linear-gradient(
+      45deg,
+      ${({ theme }) => theme.primary},
+      ${({ theme }) => theme.secondary}
+    );
+    box-shadow: 
+      0 7px 25px rgba(0, 0, 0, 0.2),
+      0 5px 12px ${({ theme }) => theme.primary}50;
+  }
+  
+  &:hover svg {
+    transform: translateY(-3px);
   }
   
   &:focus-visible {
@@ -186,6 +260,45 @@ const ScrollToTopButton = styled(motion.button)`
     bottom: 20px;
     right: 20px;
   }
+  
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      display: none;
+    }
+    
+    transition: background 0.3s ease;
+    
+    &:hover svg {
+      transform: none;
+    }
+  }
+`;
+
+// Floating elements to enhance visual interest
+const FloatingElement = styled(motion.div)`
+  position: absolute;
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => `${theme.primary}10`},
+    ${({ theme }) => `${theme.secondary}05`}
+  );
+  border-radius: 50%;
+  filter: blur(40px);
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.4;
+  will-change: transform;
+  animation: ${floatAnimation} ${props => props.duration || 10}s infinite ease-in-out;
+  animation-delay: ${props => props.delay || 0}s;
+  
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
+`;
+
+// Page transition wrapper with enhanced animations
+const PageTransition = styled(motion.div)`
+  display: contents;
 `;
 
 const Home = () => {
@@ -196,82 +309,140 @@ const Home = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("");
   const { t } = useContext(LanguageContext);
+  const [floatingElements, setFloatingElements] = useState([]);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  
+  // Smoothed progress for better animation
+  const smoothProgress = useSpring(0, { 
+    damping: 30, 
+    stiffness: 300,
+    restDelta: 0.001
+  });
+  
+  // Use transform to update progress bar's CSS variable
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    smoothProgress.set(latest);
+  });
   
   // Set initial loading message using translation
   useEffect(() => {
     setLoadingMessage(t('home.loading.preparing'));
+    
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleMotionPreference = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handleMotionPreference);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleMotionPreference);
+    };
   }, [t]);
   
-  // Track loading progress with dynamic messages
+  // Generate floating elements for visual interest
+  useEffect(() => {
+    if (!prefersReducedMotion) {
+      const elements = Array.from({ length: 6 }, (_, i) => ({
+        id: i,
+        width: Math.random() * 200 + 100,
+        height: Math.random() * 200 + 100,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        duration: Math.random() * 8 + 8,
+        delay: Math.random() * 5
+      }));
+      setFloatingElements(elements);
+    } else {
+      setFloatingElements([]);
+    }
+  }, [prefersReducedMotion]);
+  
+  // Track loading progress with dynamic messages and realistic timing
   useEffect(() => {
     let timer;
     let progress = 0;
     
     const incrementProgress = () => {
       if (progress < 100) {
-        // More natural progress increment with slowdown at the end
+        // More natural progress increment with variable speeds and realistic pauses
         const increment = progress < 60 
-          ? Math.random() * 12 
+          ? Math.random() * 8 + 2
           : progress < 85 
-            ? Math.random() * 6 
-            : Math.random() * 2;
+            ? (Math.random() * 3 + 1) * (Math.random() > 0.7 ? 0.2 : 1) // Occasional slowdowns
+            : Math.random() * 1.5;
             
         progress += increment;
         
-        // Update loading message based on progress
-        if (progress < 20) setLoadingMessage(t('home.loading.preparing'));
-        else if (progress < 40) setLoadingMessage(t('home.loading.loadingElements'));
-        else if (progress < 60) setLoadingMessage(t('home.loading.settingAnimations'));
-        else if (progress < 80) setLoadingMessage(t('home.loading.optimizing'));
-        else if (progress < 95) setLoadingMessage(t('home.loading.almostReady'));
-        else setLoadingMessage(t('home.loading.finalTouches'));
+        // More granular loading messages based on progress
+        if (progress < 15) setLoadingMessage(t('home.loading.preparing'));
+        else if (progress < 30) setLoadingMessage(t('home.loading.loadingElements'));
+        else if (progress < 45) setLoadingMessage(t('home.loading.settingAnimations'));
+        else if (progress < 60) setLoadingMessage(t('home.loading.optimizing'));
+        else if (progress < 75) setLoadingMessage(t('home.loading.almostReady'));
+        else if (progress < 90) setLoadingMessage(t('home.loading.finalTouches'));
+        else setLoadingMessage(t('home.loading.readyToLaunch'));
         
         if (progress > 100) progress = 100;
         setLoadingProgress(progress);
         
         if (progress < 100) {
-          // Variable timing for more natural loading feel
-          const delay = 100 + Math.random() * 220 + (progress > 85 ? 400 : 0);
+          // Variable timing with realistic slowdowns at specific progress points
+          let delay = 100 + Math.random() * 180;
+          
+          // Simulate processing pauses at specific points
+          if (progress > 30 && progress < 35) delay += 400;
+          if (progress > 60 && progress < 65) delay += 300;
+          if (progress > 85) delay += 500;
+          
           timer = setTimeout(incrementProgress, delay);
         } else {
-          setTimeout(() => setIsLoading(false), 500);
+          // Delay final completion for more realism
+          setTimeout(() => setIsLoading(false), 800);
         }
       }
     };
     
-    timer = setTimeout(incrementProgress, 400);
+    // Initial delay to simulate initial application setup
+    timer = setTimeout(incrementProgress, 600);
     
     return () => {
       clearTimeout(timer);
     };
   }, [t]);
   
-  const handleScroll = useCallback(() => {
-    setShowScrollTop(window.scrollY > window.innerHeight * 0.5);
-  }, []);
+  // Optimized scroll handler with debounce
+  const handleScroll = useCallback(
+    debounce(() => {
+      setShowScrollTop(window.scrollY > window.innerHeight * 0.5);
+    }, 100, { leading: true }),
+    []
+  );
   
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      handleScroll.cancel();
     };
   }, [handleScroll]);
   
   const handleScrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: prefersReducedMotion ? 'auto' : 'smooth'
     });
   };
 
+  // Enhanced animation variants with smoother timing
   const fadeInVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { 
       opacity: 1, 
       y: 0,
       transition: { 
-        duration: 0.6, 
+        duration: 0.7, 
         ease: [0.16, 1, 0.3, 1] 
       }
     }
@@ -283,11 +454,53 @@ const Home = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.15,
-        delayChildren: 0.3
+        delayChildren: 0.3,
+        ease: "easeOut"
       }
     }
   };
+  
+  // Generate loading icon SVG
+  const LoadingIcon = () => (
+    <LoadingIconContainer
+      animate={{
+        rotateY: [0, 360],
+      }}
+      transition={{
+        duration: 2.5,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop"
+      }}
+    >
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <motion.path
+          d="M30 5L37.7128 21.9463L55.9808 25.3688L42.9904 38.0537L46.7256 55.6312L30 47.5L13.2744 55.6312L17.0096 38.0537L4.01924 25.3688L22.2872 21.9463L30 5Z"
+          stroke="url(#gradient)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          initial={{ pathLength: 0, opacity: 0.2 }}
+          animate={{ pathLength: [0, 1, 0], opacity: [0.2, 1, 0.2] }}
+          transition={{
+            duration: 2.5,
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatType: "loop"
+          }}
+        />
+        <defs>
+          <linearGradient id="gradient" x1="4" y1="5" x2="56" y2="55" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#4a25aa" />
+            <stop offset="1" stopColor="#5e4adb" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </LoadingIconContainer>
+  );
 
+  // Enhanced loading screen with subtle animations
   if (isLoading) {
     return (
       <motion.div 
@@ -301,32 +514,67 @@ const Home = () => {
           justifyContent: 'center',
           background: 'var(--background)',
           flexDirection: 'column',
-          padding: '20px'
+          padding: '20px',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
+        {!prefersReducedMotion && floatingElements.map(element => (
+          <FloatingElement
+            key={element.id}
+            style={{
+              width: element.width + 'px',
+              height: element.height + 'px',
+              top: element.top,
+              left: element.left
+            }}
+            duration={element.duration}
+            delay={element.delay}
+          />
+        ))}
+        
+        <LoadingContainer
+          initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          style={{ 
+            transformStyle: 'preserve-3d',
+            transform: prefersReducedMotion ? 'none' : 'rotateX(10deg)' 
+          }}
         >
-          <LoadingContainer>
-            <LoadingText>{loadingMessage}</LoadingText>
-            <LoadingProgress progress={loadingProgress} />
-            <LoadingPercentage>{Math.round(loadingProgress)}%</LoadingPercentage>
-            <LoadingSubtext>
-              {loadingProgress < 100 
-                ? t('home.loading.pleaseWait')
-                : t('home.loading.readyToLaunch')
-              }
-            </LoadingSubtext>
-          </LoadingContainer>
-        </motion.div>
+          <LoadingIcon />
+          <LoadingText>{loadingMessage}</LoadingText>
+          <LoadingProgress progress={loadingProgress} />
+          <LoadingPercentage>
+            <motion.span
+              key={Math.round(loadingProgress)}
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -10, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {Math.round(loadingProgress)}%
+            </motion.span>
+          </LoadingPercentage>
+          
+          <LoadingSubtext>
+            {loadingProgress < 100 
+              ? t('home.loading.pleaseWait')
+              : t('home.loading.readyToLaunch')
+            }
+          </LoadingSubtext>
+        </LoadingContainer>
       </motion.div>
     );
   }
 
   return (
-    <>
+    <PageTransition
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <Helmet>
         <title>{t('home.meta.title')}</title>
         <meta name="description" content={t('home.meta.description')} />
@@ -343,20 +591,42 @@ const Home = () => {
         <link rel="preload" as="image" href="/logo.svg" />
       </Helmet>
       
-      <ProgressBar style={{ scaleX: scrollYProgress }} />
+      {/* Progress bar with useTransform for better performance */}
+      <ProgressBar style={{ scaleX: smoothProgress }} />
+      
+      {/* Background floating elements for visual interest */}
+      {!prefersReducedMotion && floatingElements.map(element => (
+        <FloatingElement
+          key={element.id}
+          style={{
+            width: element.width + 'px',
+            height: element.height + 'px',
+            top: element.top,
+            left: element.left,
+            position: 'fixed'
+          }}
+          duration={element.duration}
+          delay={element.delay}
+        />
+      ))}
       
       <motion.div 
         ref={homeRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6 }}
       >
         <Hero />
         
         <Suspense fallback={
           <LoadingFallback>
-            <LoadingContainer>
+            <LoadingContainer
+              initial={{ y: 20, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <LoadingIcon />
               <LoadingText>{t('home.loading.loadingContent')}</LoadingText>
               <LoadingProgress progress={70} />
               <LoadingPercentage>70%</LoadingPercentage>
@@ -373,7 +643,7 @@ const Home = () => {
               variants={fadeInVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
+              viewport={{ once: true, amount: 0.1, margin: "-100px 0px" }}
             >
               <About />
             </SectionWrapper>
@@ -382,7 +652,7 @@ const Home = () => {
               variants={fadeInVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
+              viewport={{ once: true, amount: 0.1, margin: "-100px 0px" }}
             >
               <Skills />
             </SectionWrapper>
@@ -391,7 +661,7 @@ const Home = () => {
               variants={fadeInVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
+              viewport={{ once: true, amount: 0.1, margin: "-100px 0px" }}
             >
               <Projects />
             </SectionWrapper>
@@ -400,7 +670,7 @@ const Home = () => {
               variants={fadeInVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
+              viewport={{ once: true, amount: 0.1, margin: "-100px 0px" }}
             >
               <Contact />
             </SectionWrapper>
@@ -411,9 +681,9 @@ const Home = () => {
       <AnimatePresence>
         {showScrollTop && (
           <ScrollToTopButton
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleScrollToTop}
@@ -426,7 +696,7 @@ const Home = () => {
           </ScrollToTopButton>
         )}
       </AnimatePresence>
-    </>
+    </PageTransition>
   );
 };
 
