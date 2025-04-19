@@ -26,13 +26,91 @@ export const translations = {
       projectsCompleted: "Projects Completed",
       clientsSatisfied: "Clients Satisfied"
     },
-    skills: {
-      title: "Our Services",
-      description: "Comprehensive design solutions for your brand",
-      frontend: "UI/UX Design",
-      backend: "Logo Design",
-      database: "Web Development",
-      other: "Brand Identity"
+    services: {
+      subtitle: "What We Offer",
+      title: "Our Premium Services",
+      description: "We deliver end-to-end digital solutions that transform businesses. Our expert team combines creativity with technical excellence to help your brand thrive in today's competitive landscape.",
+      webDesign: "Web Design & Development",
+      webDesignDesc: "We create stunning, high-performance websites that captivate your audience and drive conversions, combining beautiful design with robust functionality.",
+      uiUx: "UI/UX Design",
+      uiUxDesc: "Our design team crafts intuitive interfaces and seamless user experiences that delight users and exceed expectations, ensuring your product stands out.",
+      logo: "Brand Identity & Logo Design",
+      logoDesc: "We develop distinctive brand identities that reflect your values and resonate with your target audience, creating a lasting impression in the market.",
+      marketing: "Digital Marketing",
+      marketingDesc: "We implement data-driven marketing strategies that increase your online visibility, attract qualified leads, and maximize your ROI across digital channels.",
+      mobile: "Mobile App Development",
+      mobileDesc: "We build powerful, user-friendly mobile applications for iOS and Android platforms that engage users and deliver exceptional performance.",
+      ecommerce: "E-commerce Solutions",
+      ecommerceDesc: "We design and develop comprehensive e-commerce platforms that streamline your online sales process and create seamless shopping experiences.",
+      learnMore: "Learn More",
+      // Added category names
+      categories: {
+        all: "All Services",
+        webDesign: "Web Design",
+        uiUx: "UI/UX Design",
+        logo: "Logo Design",
+        marketing: "Marketing",
+        mobile: "Mobile Apps",
+        ecommerce: "E-commerce"
+      },
+      // Added tags
+      tags: {
+        bestSeller: "Best Seller",
+        popular: "Popular",
+        growing: "Growing",
+        new: "New"
+      },
+      // Added features for each service
+      features: {
+        webDesign: [
+          "Responsive Design",
+          "SEO Optimization",
+          "Performance Tuning",
+          "Custom Animations",
+          "CMS Integration",
+          "Analytics Setup"
+        ],
+        uiUx: [
+          "User Research",
+          "Wireframing",
+          "Prototyping",
+          "User Testing",
+          "Interface Design",
+          "Design Systems"
+        ],
+        logo: [
+          "Logo Design",
+          "Brand Guidelines",
+          "Typography Selection",
+          "Color Palette",
+          "Brand Assets",
+          "Stationery Design"
+        ],
+        marketing: [
+          "SEO & Content Marketing",
+          "Social Media Management",
+          "PPC Campaigns",
+          "Email Marketing",
+          "Analytics & Reporting",
+          "Conversion Optimization"
+        ],
+        mobile: [
+          "Native Development",
+          "Cross-platform Apps",
+          "UI/UX Design",
+          "App Store Optimization",
+          "Backend Integration",
+          "Maintenance & Support"
+        ],
+        ecommerce: [
+          "Custom Storefronts",
+          "Payment Integration",
+          "Inventory Management",
+          "Mobile Optimization",
+          "Customer Analytics",
+          "Marketing Automation"
+        ]
+      }
     },
     projects: {
       title: "Our Portfolio",
@@ -121,13 +199,91 @@ export const translations = {
       projectsCompleted: "المشاريع المنجزة",
       clientsSatisfied: "العملاء الراضون"
     },
-    skills: {
-      title: "خدماتنا",
-      description: "حلول تصميم شاملة لعلامتك التجارية",
-      frontend: "تصميم واجهة المستخدم",
-      backend: "تصميم الشعارات",
-      database: "تطوير الويب",
-      other: "هوية العلامة التجارية"
+    services: {
+      subtitle: "ما نقدمه",
+      title: "خدماتنا المتميزة",
+      description: "نحن نقدم حلولًا رقمية متكاملة تحول الأعمال. يجمع فريقنا من الخبراء بين الإبداع والتميز التقني لمساعدة علامتك التجارية على الازدهار في المشهد التنافسي اليوم.",
+      webDesign: "تصميم وتطوير المواقع الإلكترونية",
+      webDesignDesc: "نقوم بإنشاء مواقع مذهلة وعالية الأداء تأسر جمهورك وتدفع التحويلات، مع الجمع بين التصميم الجميل والوظائف القوية.",
+      uiUx: "تصميم واجهة المستخدم/تجربة المستخدم",
+      uiUxDesc: "يصمم فريق التصميم لدينا واجهات بديهية وتجارب مستخدم سلسة تسعد المستخدمين وتتجاوز التوقعات، مما يضمن تميز منتجك.",
+      logo: "الهوية التجارية وتصميم الشعار",
+      logoDesc: "نطور هويات تجارية مميزة تعكس قيمك وتتواصل مع جمهورك المستهدف، مما يخلق انطباعًا دائمًا في السوق.",
+      marketing: "التسويق الرقمي",
+      marketingDesc: "نحن ننفذ استراتيجيات تسويقية قائمة على البيانات تزيد من ظهورك عبر الإنترنت وتجذب العملاء المؤهلين وتزيد عائد الاستثمار عبر القنوات الرقمية.",
+      mobile: "تطوير تطبيقات الهاتف المحمول",
+      mobileDesc: "نبني تطبيقات جوال قوية وسهلة الاستخدام لمنصات iOS و Android تجذب المستخدمين وتقدم أداءً استثنائيًا.",
+      ecommerce: "حلول التجارة الإلكترونية",
+      ecommerceDesc: "نصمم ونطور منصات تجارة إلكترونية شاملة تبسط عملية البيع عبر الإنترنت وتخلق تجارب تسوق سلسة.",
+      learnMore: "اعرف المزيد",
+      // Added category names
+      categories: {
+        all: "جميع الخدمات",
+        webDesign: "تصميم الويب",
+        uiUx: "تصميم واجهة المستخدم",
+        logo: "تصميم الشعار",
+        marketing: "التسويق",
+        mobile: "تطبيقات الجوال",
+        ecommerce: "التجارة الإلكترونية"
+      },
+      // Added tags
+      tags: {
+        bestSeller: "الأكثر مبيعًا",
+        popular: "شائع",
+        growing: "متنامي",
+        new: "جديد"
+      },
+      // Added features for each service
+      features: {
+        webDesign: [
+          "تصميم متجاوب",
+          "تحسين محركات البحث",
+          "تحسين الأداء",
+          "رسوم متحركة مخصصة",
+          "تكامل نظام إدارة المحتوى",
+          "إعداد التحليلات"
+        ],
+        uiUx: [
+          "أبحاث المستخدم",
+          "تصميم الإطارات",
+          "إنشاء النماذج",
+          "اختبار المستخدم",
+          "تصميم الواجهة",
+          "أنظمة التصميم"
+        ],
+        logo: [
+          "تصميم الشعار",
+          "إرشادات العلامة التجارية",
+          "اختيار الخطوط",
+          "لوحة الألوان",
+          "أصول العلامة التجارية",
+          "تصميم القرطاسية"
+        ],
+        marketing: [
+          "تحسين محركات البحث والتسويق بالمحتوى",
+          "إدارة وسائل التواصل الاجتماعي",
+          "حملات الدفع لكل نقرة",
+          "التسويق عبر البريد الإلكتروني",
+          "التحليلات وإعداد التقارير",
+          "تحسين معدل التحويل"
+        ],
+        mobile: [
+          "تطوير تطبيقات أصلية",
+          "تطبيقات متعددة المنصات",
+          "تصميم واجهة المستخدم/تجربة المستخدم",
+          "تحسين متجر التطبيقات",
+          "تكامل الواجهة الخلفية",
+          "الصيانة والدعم"
+        ],
+        ecommerce: [
+          "واجهات متجر مخصصة",
+          "تكامل الدفع",
+          "إدارة المخزون",
+          "تحسين الهاتف المحمول",
+          "تحليلات العملاء",
+          "أتمتة التسويق"
+        ]
+      }
     },
     projects: {
       title: "أعمالنا",
