@@ -1,11 +1,10 @@
 // src/pages/Home.js
-import React, { useEffect, useRef, Suspense, lazy, useState, useCallback, useContext } from 'react';
+import React, { useEffect, useRef, Suspense, lazy, useState, useContext } from 'react';
 import { motion, useScroll, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion';
 import Hero from '../components/sections/Hero';
 import { Helmet } from 'react-helmet';
 import styled, { keyframes } from 'styled-components';
 import { LanguageContext } from '../contexts/LanguageContext';
-import { debounce } from 'lodash';
 
 // Lazy load components with named exports for better debugging
 const Skills = lazy(() => import('../components/sections/Skills'));
@@ -304,121 +303,123 @@ const Home = () => {
   const [floatingElements, setFloatingElements] = useState([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   
-  // Smoothed progress for better animation
+  // Use a more efficient spring configuration for smoother scrolling
   const smoothProgress = useSpring(0, { 
-    damping: 30, 
-    stiffness: 300,
-    restDelta: 0.001
+    damping: 25, 
+    stiffness: 350,
+    restDelta: 0.0005
   });
   
-  // Use transform to update progress bar's CSS variable
+  // Optimized motion value event to reduce unnecessary renders
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     smoothProgress.set(latest);
   });
   
-  // Set initial loading message using translation
+  // Initialize and check for reduced motion in a single effect
   useEffect(() => {
+    // Set initial loading message
     setLoadingMessage(t('home.loading.preparing'));
     
-    // Check for reduced motion preference
+    // Check for reduced motion preference with a single listener
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
     
     const handleMotionPreference = (e) => setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener('change', handleMotionPreference);
     
+    // Pre-generate floating elements for performance
+    if (!mediaQuery.matches) {
+      const elements = Array.from({ length: 6 }, (_, i) => ({
+        id: i,
+        width: Math.random() * 150 + 100, // Slightly smaller for better performance
+        height: Math.random() * 150 + 100,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        duration: Math.random() * 6 + 6, // Faster animations
+        delay: Math.random() * 3 // Shorter delays
+      }));
+      setFloatingElements(elements);
+    }
+    
     return () => {
       mediaQuery.removeEventListener('change', handleMotionPreference);
     };
   }, [t]);
   
-  // Generate floating elements for visual interest
+  // Optimized loading simulation with significantly reduced delays
   useEffect(() => {
-    if (!prefersReducedMotion) {
-      const elements = Array.from({ length: 6 }, (_, i) => ({
-        id: i,
-        width: Math.random() * 200 + 100,
-        height: Math.random() * 200 + 100,
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        duration: Math.random() * 8 + 8,
-        delay: Math.random() * 5
-      }));
-      setFloatingElements(elements);
-    } else {
-      setFloatingElements([]);
-    }
-  }, [prefersReducedMotion]);
-  
-  // Track loading progress with dynamic messages and realistic timing
-  useEffect(() => {
+    if (!isLoading) return;
+    
     let timer;
     let progress = 0;
+    const loadingSteps = [
+      { threshold: 20, message: 'home.loading.preparing' },
+      { threshold: 40, message: 'home.loading.loadingElements' },
+      { threshold: 60, message: 'home.loading.settingAnimations' },
+      { threshold: 80, message: 'home.loading.finalTouches' },
+      { threshold: 100, message: 'home.loading.readyToLaunch' }
+    ];
     
     const incrementProgress = () => {
       if (progress < 100) {
-        // More natural progress increment with variable speeds and realistic pauses
-        const increment = progress < 60 
-          ? Math.random() * 8 + 2
-          : progress < 85 
-            ? (Math.random() * 3 + 1) * (Math.random() > 0.7 ? 0.2 : 1) // Occasional slowdowns
-            : Math.random() * 1.5;
-            
+        // Faster, more consistent progress increments
+        const increment = progress < 70 ? 6 + Math.random() * 4 : 3 + Math.random() * 2;
         progress += increment;
         
-        // More granular loading messages based on progress
-        if (progress < 15) setLoadingMessage(t('home.loading.preparing'));
-        else if (progress < 30) setLoadingMessage(t('home.loading.loadingElements'));
-        else if (progress < 45) setLoadingMessage(t('home.loading.settingAnimations'));
-        else if (progress < 60) setLoadingMessage(t('home.loading.optimizing'));
-        else if (progress < 75) setLoadingMessage(t('home.loading.almostReady'));
-        else if (progress < 90) setLoadingMessage(t('home.loading.finalTouches'));
-        else setLoadingMessage(t('home.loading.readyToLaunch'));
+        // Update loading message based on current progress
+        for (const step of loadingSteps) {
+          if (progress < step.threshold) {
+            setLoadingMessage(t(step.message));
+            break;
+          }
+        }
         
         if (progress > 100) progress = 100;
         setLoadingProgress(progress);
         
         if (progress < 100) {
-          // Variable timing with realistic slowdowns at specific progress points
-          let delay = 100 + Math.random() * 180;
-          
-          // Simulate processing pauses at specific points
-          if (progress > 30 && progress < 35) delay += 400;
-          if (progress > 60 && progress < 65) delay += 300;
-          if (progress > 85) delay += 500;
-          
+          // Much shorter delays (50-100ms instead of 100-280ms)
+          const delay = 50 + Math.random() * 50;
           timer = setTimeout(incrementProgress, delay);
         } else {
-          // Delay final completion for more realism
-          setTimeout(() => setIsLoading(false), 800);
+          // Reduced final completion delay (300ms instead of 800ms)
+          setTimeout(() => setIsLoading(false), 300);
         }
       }
     };
     
-    // Initial delay to simulate initial application setup
-    timer = setTimeout(incrementProgress, 600);
+    // Start immediately with a minimal delay
+    timer = setTimeout(incrementProgress, 200);
     
     return () => {
       clearTimeout(timer);
     };
-  }, [t]);
+  }, [t, isLoading]);
   
-  // Optimized scroll handler with debounce
-  const handleScroll = useCallback(
-    debounce(() => {
-      setShowScrollTop(window.scrollY > window.innerHeight * 0.5);
-    }, 100, { leading: true }),
-    []
-  );
-  
+  // More efficient scroll handler using requestAnimationFrame
   useEffect(() => {
+    let ticking = false;
+    let lastScrollY = 0;
+    const threshold = window.innerHeight * 0.3; // Lower threshold for quicker button appearance
+    
+    const handleScroll = () => {
+      lastScrollY = window.scrollY;
+      
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setShowScrollTop(lastScrollY > threshold);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      handleScroll.cancel();
     };
-  }, [handleScroll]);
+  }, []);
   
   const handleScrollToTop = () => {
     window.scrollTo({
