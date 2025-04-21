@@ -67,24 +67,46 @@ const NavContent = styled.div`
   }
 `;
 
+// Enhanced Logo with glitch effect on hover
 const Logo = styled(motion(Link))`
-font-size: 1.8rem;
-font-weight: 800;
-color: ${({ theme, scrolled }) => scrolled ? theme.primary : theme.text};
-text-decoration: none;
-position: relative;
-z-index: 2;
-background: ${({ scrolled, theme }) => 
-  scrolled ? 
-  `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` : 
-  'none'};
-background-clip: ${({ scrolled }) => scrolled ? 'text' : 'none'};
--webkit-background-clip: ${({ scrolled }) => scrolled ? 'text' : 'none'};
--webkit-text-fill-color: ${({ scrolled }) => scrolled ? 'transparent' : 'inherit'};
-
-@media (max-width: 768px) {
-  font-size: 1.6rem;
-}
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: ${({ theme, scrolled }) => scrolled ? theme.primary : theme.text};
+  text-decoration: none;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+  display: inline-block;
+  background: ${({ scrolled, theme }) => 
+    scrolled ? 
+    `linear-gradient(135deg, ${theme.primary}, ${theme.secondary}, ${theme.primary})` : 
+    'none'};
+  background-size: ${({ scrolled }) => scrolled ? '200% auto' : 'auto'};
+  background-clip: ${({ scrolled }) => scrolled ? 'text' : 'none'};
+  -webkit-background-clip: ${({ scrolled }) => scrolled ? 'text' : 'none'};
+  -webkit-text-fill-color: ${({ scrolled }) => scrolled ? 'transparent' : 'inherit'};
+  animation: ${({ scrolled }) => scrolled ? css`${shimmer} 3s linear infinite` : 'none'};
+  
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 2px;
+    background: ${({ theme, scrolled }) => 
+      scrolled ? `linear-gradient(90deg, transparent, ${theme.primary}80, transparent)` : 'transparent'};
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+  }
+  
+  &:hover::after {
+    transform: scaleX(1);
+  }
+  
+  @media (max-width: ${MOBILE_BREAKPOINT}) {
+    font-size: 1.5rem;
+  }
 `;
 const LogoHighlight = styled.span`
   color: ${({ theme }) => theme.primary};
