@@ -21,10 +21,10 @@ const useScrollAnimation = (options = {}) => {
     // Check if we're in a browser environment
     if (typeof window !== 'undefined') {
       // Check for reduced motion preference
-      setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setPrefersReducedMotion(mediaQuery.matches);
       
       // Add listener for preference changes
-      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
       const handleMediaChange = (e) => {
         setPrefersReducedMotion(e.matches);
       };
@@ -171,15 +171,19 @@ const SectionHeader = styled.div`
 const titleGradient = css`
   background: linear-gradient(
     45deg,
-    ${({ theme }) => theme.primary},
-    ${({ theme }) => theme.secondary},
-    ${({ theme }) => theme.primary}
+    ${({ theme }) => theme.primary || '#6c5ce7'},
+    ${({ theme }) => theme.secondary || '#6c5ce7'},
+    ${({ theme }) => theme.primary || '#6c5ce7'}
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   animation: ${gradientBg} 8s linear infinite;
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 const SectionTitle = styled(motion.h2)`
@@ -199,8 +203,8 @@ const SectionTitle = styled(motion.h2)`
     height: 6px;
     background: linear-gradient(
       to right,
-      ${({ theme }) => theme.primary},
-      ${({ theme }) => theme.secondary}
+      ${({ theme }) => theme.primary || '#6c5ce7'},
+      ${({ theme }) => theme.secondary || '#6c5ce7'}
     );
     bottom: -15px;
     left: 50%;
@@ -222,7 +226,7 @@ const SectionSubtitle = styled(motion.span)`
   margin-bottom: 1rem;
   font-size: clamp(0.9rem, 2vw, 1.2rem);
   font-weight: 600;
-  color: ${({ theme }) => theme.primary};
+  color: ${({ theme }) => theme.primary || '#6c5ce7'};
   text-transform: uppercase;
   letter-spacing: 3px;
   text-align: center;
@@ -231,7 +235,7 @@ const SectionSubtitle = styled(motion.span)`
 const SectionDescription = styled(motion.p)`
   max-width: 850px;
   margin: 2.5rem auto 0;
-  color: ${({ theme }) => theme.textAlt};
+  color: ${({ theme }) => theme.textAlt || '#888'};
   font-size: clamp(1rem, 2vw, 1.3rem);
   line-height: 1.8;
   text-align: center;
@@ -242,8 +246,7 @@ const SectionDescription = styled(motion.p)`
   }
 `;
 
-
-// Improved filter design with better accessibility
+// IMPROVED: Better mobile responsiveness for filter container
 const FilterContainer = styled(motion.div)`
   display: flex;
   justify-content: center;
@@ -252,23 +255,42 @@ const FilterContainer = styled(motion.div)`
   margin-bottom: clamp(2.5rem, 5vw, 4rem);
   position: relative;
   padding-bottom: 15px;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    gap: 0.7rem;
+    justify-content: center;
+    padding-inline: 0.5rem;
+  }
   
   @media (max-width: 480px) {
     gap: 0.5rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 20px;
+    padding-inline: 0;
+    margin-inline: -4%;
+    width: 108%;
+    scroll-padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    &::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* Add horizontal padding to create space at edges */
+    &::before, &::after {
+      content: '';
+      min-width: 4%;
+    }
   }
 `;
 
-// Animated indicator with improved transitions
-const ActiveIndicator = styled(motion.div)`
-  position: absolute;
-  bottom: 0;
-  height: 4px;
-  background: linear-gradient(to right, ${({ theme }) => theme.primary || '#6c5ce7'}, ${({ theme }) => theme.secondary || '#6c5ce7'});
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
-`;
-
-// Enhanced buttons with better state visualization
+// IMPROVED: Enhanced buttons with better responsiveness and layout
 const FilterButton = styled(motion.button)`
   background-color: transparent;
   color: ${({ active, theme }) => active ? (theme.primary || '#6c5ce7') : (theme.text || '#222')};
@@ -282,6 +304,9 @@ const FilterButton = styled(motion.button)`
   position: relative;
   overflow: hidden;
   box-shadow: ${({ active }) => active ? `0 5px 15px rgba(108, 92, 231, 0.15)` : 'none'};
+  display: inline-block;
+  margin-bottom: 5px; /* Ensure space for indicator */
+  white-space: nowrap;
   
   &::before {
     content: '';
@@ -306,6 +331,35 @@ const FilterButton = styled(motion.button)`
   &:focus-visible {
     outline: 2px solid ${({ theme }) => theme.primary || '#6c5ce7'};
     outline-offset: 2px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    flex: 0 0 auto;
+    min-width: max-content;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+`;
+
+// IMPROVED: Enhanced indicator with better positioning for mobile
+const ActiveIndicator = styled(motion.div)`
+  position: absolute;
+  bottom: 0;
+  height: 4px;
+  background: linear-gradient(to right, ${({ theme }) => theme.primary || '#6c5ce7'}, ${({ theme }) => theme.secondary || '#6c5ce7'});
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+  
+  @media (max-width: 480px) {
+    bottom: 12px;
+    height: 3px;
   }
 `;
 
@@ -432,6 +486,14 @@ const ProjectCard = styled(motion.div)`
   &:hover::before {
     opacity: 1;
   }
+  
+  @media (prefers-reduced-motion: reduce) {
+    transition: box-shadow 0.5s ease;
+    
+    &:hover {
+      transform: none;
+    }
+  }
 `;
 
 // Improved image container with better overflow handling
@@ -472,6 +534,14 @@ const ProjectImage = styled(motion.img)`
   
   ${ProjectCard}:hover & {
     transform: scale(1.1);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    
+    ${ProjectCard}:hover & {
+      transform: none;
+    }
   }
 `;
 
@@ -519,6 +589,11 @@ const ProjectCategory = styled(motion.span)`
     transform: translateY(0);
     opacity: 1;
     transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    transform: translateY(0);
+    opacity: 1;
   }
 `;
 
@@ -660,6 +735,22 @@ const ProjectLink = styled(motion.a)`
   &:hover svg {
     transform: ${props => props.isRTL ? 'translateX(-4px)' : 'translateX(4px)'};
   }
+  
+  @media (prefers-reduced-motion: reduce) {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    
+    &:hover {
+      transform: none;
+    }
+    
+    &:hover svg {
+      transform: none;
+    }
+    
+    &.primary::before {
+      display: none;
+    }
+  }
 `;
 
 // Enhanced empty state with better visual feedback
@@ -693,6 +784,12 @@ const EmptyResults = styled(motion.div)`
     left: -100%;
     animation: ${shineAnimation} 4s infinite linear;
   }
+  
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      animation: none;
+    }
+  }
 `;
 
 // Improved empty state icon
@@ -712,6 +809,10 @@ const EmptyIcon = styled(motion.div)`
     color: ${({ theme }) => theme.textAlt || '#888'};
     font-size: clamp(2rem, 2.5vw, 2.5rem);
   }
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 // Enhanced empty text with better typography
@@ -730,7 +831,7 @@ const EmptySuggestion = styled(motion.p)`
 // Modern reset button with improved design
 const ResetButton = styled(motion.button)`
   margin-top: 1rem;
-  background: var(--primary, #6c5ce7);
+  background: ${({ theme }) => theme.primary || '#6c5ce7'};
   color: white;
   border: none;
   border-radius: 30px;
@@ -768,13 +869,21 @@ const ResetButton = styled(motion.button)`
     outline: 2px solid white;
     outline-offset: 3px;
   }
+  
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      display: none;
+    }
+  }
 `;
+
+const fallbackImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Cpath d='M30 40 L70 40 L70 60 L30 60 Z' fill='%23cccccc'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' text-anchor='middle' alignment-baseline='middle' fill='%23999999'%3ENo Image%3C/text%3E%3C/svg%3E";
 
 const ProjectsSection = () => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
-  const { language, t } = useContext(LanguageContext);
+  const { language, t } = useContext(LanguageContext) || { language: 'en', t: (key) => key };
   const isRTL = language === 'ar';
   
   // Check for reduced motion preference
@@ -824,11 +933,15 @@ const ProjectsSection = () => {
   const [searchRef, searchControls] = useScrollAnimation();
   const [gridRef] = useScrollAnimation({ amount: 0.1 });
   
+  // IMPROVED: Added filter container ref to scroll active filter into view on mobile
+  const filterContainerRef = useRef(null);
+  
   useEffect(() => {
     if (headerInView) {
       headerControls.start(prefersReducedMotion ? "visibleNoAnimation" : "visible");
     }
   }, [headerInView, headerControls, prefersReducedMotion]);
+  
   // Update active indicator position when filter changes
   useEffect(() => {
     const updateIndicator = () => {
@@ -838,16 +951,27 @@ const ProjectsSection = () => {
         const { offsetWidth, offsetLeft } = activeButton;
         setActiveIndicatorWidth(offsetWidth);
         setActiveIndicatorLeft(offsetLeft);
+        
+        // IMPROVED: Scroll active filter into view on mobile devices
+        if (window.innerWidth <= 480 && filterContainerRef.current) {
+          const container = filterContainerRef.current;
+          const scrollPosition = offsetLeft - (container.clientWidth / 2) + (offsetWidth / 2);
+          
+          container.scrollTo({
+            left: scrollPosition,
+            behavior: 'smooth'
+          });
+        }
       }
     };
     
     // Initial update
     updateIndicator();
     
-    // Set up a small timeout to ensure DOM is fully rendered
-    const timeoutId = setTimeout(updateIndicator, 50);
+    // Set up a timeout to ensure DOM is fully rendered
+    const timeoutId = setTimeout(updateIndicator, 100);
     
-    // Add resize listener
+    // Add resize listener for responsive layouts
     const handleResize = () => {
       updateIndicator();
     };
@@ -879,22 +1003,25 @@ const ProjectsSection = () => {
     }
   };
 
-  // Apply filters and search
-  const filteredProjects = projects.filter(project => {
+  // Apply filters and search - with error handling for missing data
+  const filteredProjects = projects ? projects.filter(project => {
+    // Skip invalid projects
+    if (!project) return false;
+    
     // Apply category filter
     const categoryMatch = filter === 'all' || project.category === filter;
     
     // Apply search filter (case insensitive)
     const searchLower = searchTerm.toLowerCase();
     const searchMatch = !searchTerm || 
-      project.title.toLowerCase().includes(searchLower) ||
-      project.description.toLowerCase().includes(searchLower) ||
-      project.technologies.some(tech => 
-        tech.toLowerCase().includes(searchLower)
-      );
+      (project.title && project.title.toLowerCase().includes(searchLower)) ||
+      (project.description && project.description.toLowerCase().includes(searchLower)) ||
+      (project.technologies && project.technologies.some(tech => 
+        tech && tech.toLowerCase().includes(searchLower)
+      ));
     
     return categoryMatch && searchMatch;
-  });
+  }) : [];
 
   // Animation variants
   const containerVariants = {
@@ -974,6 +1101,16 @@ const ProjectsSection = () => {
     }
   };
 
+  // Safe translation function
+  const safeTranslate = (key, fallback) => {
+    try {
+      return t(key) || fallback;
+    } catch (error) {
+      console.error(`Translation error for key ${key}:`, error);
+      return fallback;
+    }
+  };
+
   return (
     <ProjectsContainer id="projects" ref={gridRef}>
       {/* Background elements */}
@@ -1007,46 +1144,49 @@ const ProjectsSection = () => {
 
       {/* Section Header */}
       <SectionHeader ref={headerRef}>
-      <SectionSubtitle
-  variants={{
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-    visibleNoAnimation: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-  }}
-  initial="hidden"
-  animate={headerControls}
->
-  {t('projects.subtitle')}
-</SectionSubtitle>
+        <SectionSubtitle
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+            visibleNoAnimation: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+          }}
+          initial="hidden"
+          animate={headerControls}
+        >
+          {safeTranslate('projects.subtitle', 'My Works')}
+        </SectionSubtitle>
 
-<SectionTitle
-  variants={{
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 } },
-    visibleNoAnimation: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-  }}
-  initial="hidden"
-  animate={headerControls}
->
-  {t('projects.title')}
-</SectionTitle>
+        <SectionTitle
+          variants={{
+            hidden: { opacity: 0, y: 50 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 } },
+            visibleNoAnimation: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+          }}
+          initial="hidden"
+          animate={headerControls}
+        >
+          {safeTranslate('projects.title', 'Featured Projects')}
+        </SectionTitle>
 
-<SectionDescription
-  variants={{
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.8, delay: 0.4 } },
-    visibleNoAnimation: { opacity: 1, transition: { duration: 0.5 } }
-  }}
-  initial="hidden"
-  animate={headerControls}
->
-  {t('projects.description')}
-</SectionDescription>
+        <SectionDescription
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { duration: 0.8, delay: 0.4 } },
+            visibleNoAnimation: { opacity: 1, transition: { duration: 0.5 } }
+          }}
+          initial="hidden"
+          animate={headerControls}
+        >
+          {safeTranslate('projects.description', 'Here are some of my recent projects that showcase my skills and experience in software development.')}
+        </SectionDescription>
       </SectionHeader>
 
-      {/* Filters */}
+      {/* IMPROVED: Added ref to filter container for mobile scrolling */}
       <FilterContainer 
-        ref={filtersRef}
+        ref={(el) => {
+          filtersRef.current = el;
+          filterContainerRef.current = el;
+        }}
         initial={{ opacity: 0, y: 20 }}
         animate={filtersControls}
         variants={{
@@ -1076,11 +1216,11 @@ const ProjectsSection = () => {
             whileTap={{ scale: prefersReducedMotion ? 0.98 : 0.95 }}
             aria-pressed={filter === category}
           >
-            {t(`projects.categories.${category}`) || category.charAt(0).toUpperCase() + category.slice(1)}
+            {safeTranslate(`projects.categories.${category}`, category.charAt(0).toUpperCase() + category.slice(1))}
           </FilterButton>
         ))}
         
-        {/* Active indicator - fixed to show properly */}
+        {/* Active indicator */}
         {activeIndicatorWidth > 0 && (
           <ActiveIndicator 
             initial={false}
@@ -1131,7 +1271,7 @@ const ProjectsSection = () => {
         
         <SearchInput 
           type="text" 
-          placeholder={t('projects.searchPlaceholder') || "Search projects by name, description or technology..."}
+          placeholder={safeTranslate('projects.searchPlaceholder', "Search projects by name, description or technology...")}
           value={searchTerm}
           onChange={handleSearchChange}
           onFocus={() => setSearchFocused(true)}
@@ -1164,17 +1304,17 @@ const ProjectsSection = () => {
 
       {/* Project Grid */}
       <AnimatePresence mode="wait">
-      <ProjectsGrid
-        as={motion.div}
-        key="projects-grid"
-        variants={containerVariants}
-        initial="hidden"
-        animate={prefersReducedMotion ? "visibleNoAnimation" : "visible"}
-      >
-          {filteredProjects.length > 0 ? (
+        <ProjectsGrid
+          as={motion.div}
+          key="projects-grid"
+          variants={containerVariants}
+          initial="hidden"
+          animate={prefersReducedMotion ? "visibleNoAnimation" : "visible"}
+        >
+          {filteredProjects && filteredProjects.length > 0 ? (
             filteredProjects.map((project, index) => (
               <ProjectCard 
-                key={project.id} 
+                key={project.id || index} 
                 variants={itemVariants}
                 transition={{ 
                   delay: prefersReducedMotion ? 0 : index * 0.08,
@@ -1183,37 +1323,37 @@ const ProjectsSection = () => {
               >
                 <ProjectImageContainer>
                   <ProjectImage 
-                    src={project.image} 
-                    alt={project.title} 
+                    src={project.image || fallbackImage} 
+                    alt={project.title || "Project"} 
                     loading="lazy"
                     onError={(e) => {
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Cpath d='M30 40 L70 40 L70 60 L30 60 Z' fill='%23cccccc'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' text-anchor='middle' alignment-baseline='middle' fill='%23999999'%3ENo Image%3C/text%3E%3C/svg%3E";
+                      e.target.src = fallbackImage;
                     }}
                   />
                   <ImageOverlay>
                     <ProjectCategory isRTL={isRTL}>
-                      {t(`projects.categories.${project.category}`) || project.category.charAt(0).toUpperCase() + project.category.slice(1)}
+                      {safeTranslate(`projects.categories.${project.category}`, project.category ? (project.category.charAt(0).toUpperCase() + project.category.slice(1)) : "Project")}
                     </ProjectCategory>
                   </ImageOverlay>
                 </ProjectImageContainer>
                 
                 <ProjectContent isRTL={isRTL}>
                   <ProjectTitle>
-                    {project.title}
+                    {project.title || "Untitled Project"}
                   </ProjectTitle>
                   
                   <ProjectDescription>
-                    {project.description}
+                    {project.description || "No description available."}
                   </ProjectDescription>
                   
                   <ProjectTech isRTL={isRTL}>
-                    {project.technologies.map((tech, techIndex) => (
+                    {project.technologies && project.technologies.map((tech, techIndex) => (
                       <TechItem 
                         key={techIndex}
                         variants={techItemVariants}
                         style={{ "--i": techIndex }}
                       >
-                        {tech}
+                        {tech || "Unknown"}
                       </TechItem>
                     ))}
                   </ProjectTech>
@@ -1226,9 +1366,9 @@ const ProjectsSection = () => {
                         rel="noopener noreferrer"
                         className="primary"
                         isRTL={isRTL}
-                        aria-label={`View ${project.title} demo`}
+                        aria-label={`View ${project.title || "project"} demo`}
                       >
-                        <FaExternalLinkAlt aria-hidden="true" /> {t('projects.viewProject') || "View Project"}
+                        <FaExternalLinkAlt aria-hidden="true" /> {safeTranslate('projects.viewProject', "View Project")}
                       </ProjectLink>
                     )}
                     
@@ -1239,9 +1379,9 @@ const ProjectsSection = () => {
                         rel="noopener noreferrer"
                         className="secondary"
                         isRTL={isRTL}
-                        aria-label={`View ${project.title} code`}
+                        aria-label={`View ${project.title || "project"} code`}
                       >
-                        <FaGithub aria-hidden="true" /> {t('projects.viewCode') || "View Code"}
+                        <FaGithub aria-hidden="true" /> {safeTranslate('projects.viewCode', "View Code")}
                       </ProjectLink>
                     )}
                   </ProjectLinks>
@@ -1259,10 +1399,10 @@ const ProjectsSection = () => {
                 <FaSadTear aria-hidden="true" />
               </EmptyIcon>
               <EmptyText>
-                {t('projects.noResults') || "No projects found"}
+                {safeTranslate('projects.noResults', "No projects found")}
               </EmptyText>
               <EmptySuggestion>
-                {t('projects.adjustSearch') || "Try adjusting your search or filter criteria"}
+                {safeTranslate('projects.adjustSearch', "Try adjusting your search or filter criteria")}
               </EmptySuggestion>
               
               <ResetButton

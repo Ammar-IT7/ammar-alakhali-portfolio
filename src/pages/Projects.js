@@ -1,5 +1,5 @@
 // src/pages/Projects.js
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
@@ -52,16 +52,22 @@ const BackgroundGradient = styled(motion.div)`
 
 const Projects = () => {
   const containerRef = useRef(null);
+  // Added state to track window size
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   
   // Enhanced particle configuration with better performance
   const particlesInit = async (engine) => {
-    await loadSlim(engine);
+    try {
+      await loadSlim(engine);
+    } catch (error) {
+      console.error("Failed to initialize particles:", error);
+    }
   };
 
   const particlesOptions = {
     particles: {
       number: {
-        value: typeof window !== 'undefined' && window.innerWidth < 768 ? 20 : 40,
+        value: windowWidth < 768 ? 20 : 40,
         density: {
           enable: true,
           value_area: 1000
@@ -95,7 +101,7 @@ const Projects = () => {
         bounce: false
       },
       links: {
-        enable: typeof window !== 'undefined' && window.innerWidth >= 768,
+        enable: windowWidth >= 768,
         distance: 150,
         color: "#6c5ce7",
         opacity: 0.1,
@@ -137,13 +143,31 @@ const Projects = () => {
     if (typeof window === 'undefined') return;
     
     const handleMouseMove = (e) => {
-      // ... existing code
+      if (!containerRef.current) return;
+      
+      // Get container dimensions
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      // Calculate mouse position relative to container center
+      const x = (e.clientX - width / 2) / width;
+      const y = (e.clientY - height / 2) / height;
+      
+      // Apply subtle transform to background gradient
+      const gradient = containerRef.current.querySelector('[data-gradient]');
+      if (gradient) {
+        gradient.style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+      }
+    };
+
+    // Handle window resize
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
     };
     
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('resize', handleResize);
     
     // Modify scroll behavior - add a delay to ensure header is properly loaded
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       window.scrollTo({
         top: 0,
         behavior: 'auto' // Change from 'smooth' to 'auto' to prevent animation issues
@@ -152,6 +176,8 @@ const Projects = () => {
     
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeoutId);
     };
   }, []);
 

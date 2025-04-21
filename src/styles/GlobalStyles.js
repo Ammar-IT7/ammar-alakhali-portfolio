@@ -111,14 +111,6 @@ export const GlobalStyles = createGlobalStyle`
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: background 0.2s ease, transform 0.1s ease;
-    
-    &:hover {
-      background: ${({ theme }) => theme.secondary};
-    }
-    
-    &:active {
-      transform: translateY(1px);
-    }
   }
 
   /* Form elements */
