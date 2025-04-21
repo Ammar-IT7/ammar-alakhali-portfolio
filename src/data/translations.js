@@ -6,7 +6,25 @@ export const translations = {
       about: "About",
       projects: "Portfolio",
       resume: "Services",
-      contact: "Contact"
+      contact: "Contact",
+      openMenu: "Open Menu",
+      closeMenu: "Close Menu",
+      mainNavigation: "Main Navigation",
+      goHome: "Go to Homepage",
+      switchLanguage: "Switch Language",
+      switchToDarkMode: "Switch to Dark Mode",
+      switchToLightMode: "Switch to Light Mode",
+      backToTop: "Back to Top"
+    },
+    sidebar: {
+      greeting: "Welcome to Enova",
+      tagline: "Creating beautiful digital experiences with innovative design and technology",
+      navigation: "Navigation",
+      expandNavigation: "Expand Navigation",
+      collapseNavigation: "Collapse Navigation"
+    },
+    common: {
+      new: "New"
     },
     hero: {
       greeting: "Welcome to",
@@ -182,7 +200,25 @@ export const translations = {
       about: "من نحن",
       projects: "أعمالنا",
       resume: "خدماتنا",
-      contact: "اتصل بنا"
+      contact: "اتصل بنا",
+      openMenu: "فتح القائمة",
+      closeMenu: "إغلاق القائمة",
+      mainNavigation: "التنقل الرئيسي",
+      goHome: "الذهاب إلى الصفحة الرئيسية",
+      switchLanguage: "تغيير اللغة",
+      switchToDarkMode: "التبديل إلى الوضع الداكن",
+      switchToLightMode: "التبديل إلى الوضع الفاتح",
+      backToTop: "العودة إلى الأعلى"
+    },
+    sidebar: {
+      greeting: "مرحبًا بك في إينوفا",
+      tagline: "إنشاء تجارب رقمية جميلة مع تصميم وتكنولوجيا مبتكرة",
+      navigation: "التنقل",
+      expandNavigation: "توسيع التنقل",
+      collapseNavigation: "طي التنقل"
+    },
+    common: {
+      new: "جديد"
     },
     hero: {
       greeting: "مرحباً بكم في",
