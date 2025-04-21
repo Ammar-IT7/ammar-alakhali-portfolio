@@ -7,26 +7,26 @@ const SEO = () => {
     <Helmet>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <title>Ammar Alakhali | Software Engineer</title>
-      <meta name="description" content="Ammar Alakhali is a software engineer specializing in full-stack development with expertise in React, Node.js, and cloud technologies." />
-      <meta name="keywords" content="Ammar Alakhali, software engineer, web developer, full stack, React, Node.js" />
+      <title>Enova Studio | Creative Software Solutions</title>
+      <meta name="description" content="Enova Studio offers innovative web design, UI/UX, logo design, and app development services." />
+      <meta name="keywords" content="Enova Studio, web design, UI/UX, logo design, app development" />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
-      <meta property="og:url" content="https://ammar-it7.github.io/ammar-alakhali-portfolio/" />
-      <meta property="og:title" content="Ammar Alakhali | Software Engineer" />
-      <meta property="og:description" content="Software Engineer specializing in full-stack development" />
+      <meta property="og:url" content="https://enova-studio.com" />
+      <meta property="og:title" content="Enova Studio | Creative Software Solutions" />
+      <meta property="og:description" content="Innovative web design, UI/UX, logo design, and app development services." />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content="Ammar Alakhali | Software Engineer" />
-      <meta name="twitter:description" content="Software Engineer specializing in full-stack development" />
+      <meta name="twitter:title" content="Enova Studio | Creative Software Solutions" />
+      <meta name="twitter:description" content="Innovative web design, UI/UX, logo design, and app development services." />
       
       {/* Favicon */}
       <link rel="icon" href="/favicon.ico" />
       
       {/* Canonical URL */}
-      <link rel="canonical" href="https://ammar-it7.github.io/ammar-alakhali-portfolio/" />
+      <link rel="canonical" href="https://enova-studio.com" />
     </Helmet>
   );
 };
