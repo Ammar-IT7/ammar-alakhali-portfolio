@@ -75,9 +75,9 @@ function AppContent() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
-                <Route path="/projects" element={<Projects />} />
+                {/* <Route path="/projects" element={<Projects />} /> */}
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/resume" element={<Resume />} />
+                {/* <Route path="/resume" element={<Resume />} /> */}
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>

@@ -262,22 +262,22 @@ const Footer = () => {
           >
             {t('nav.about')}
           </FooterLink>
-          <FooterLink 
+          {/* <FooterLink 
             href="/projects" 
             isRTL={isRTL} 
             variants={item}
             whileHover={{ x: isRTL ? -5 : 5 }}
           >
             {t('nav.projects')}
-          </FooterLink>
-          <FooterLink 
+          </FooterLink> */}
+          {/* <FooterLink 
             href="/resume" 
             isRTL={isRTL} 
             variants={item}
             whileHover={{ x: isRTL ? -5 : 5 }}
           >
             {t('nav.resume')}
-          </FooterLink>
+          </FooterLink> */}
           <FooterLink 
             href="/contact" 
             isRTL={isRTL} 

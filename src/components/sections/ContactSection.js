@@ -230,7 +230,7 @@ const ContactSection = () => {
           </ContactDescription>
           
           <ContactMethods>
-            <ContactMethod isRTL={isRTL}>
+            <ContactMethod>
               <IconContainer>
                 <FaEnvelope />
               </IconContainer>
@@ -240,7 +240,7 @@ const ContactSection = () => {
               </ContactMethodInfo>
             </ContactMethod>
             
-            <ContactMethod isRTL={isRTL}>
+            <ContactMethod>
               <IconContainer>
                 <FaMapMarkerAlt />
               </IconContainer>
@@ -250,13 +250,13 @@ const ContactSection = () => {
               </ContactMethodInfo>
             </ContactMethod>
             
-            <ContactMethod isRTL={isRTL}>
-              <IconContainer>
+            <ContactMethod>
+              <IconContainer >
                 <FaPhone />
               </IconContainer>
               <ContactMethodInfo>
                 <ContactMethodTitle>Phone</ContactMethodTitle>
-                <ContactMethodValue>+967 739502156</ContactMethodValue>
+                <ContactMethodValue>967739502156+</ContactMethodValue>
               </ContactMethodInfo>
             </ContactMethod>
           </ContactMethods>
