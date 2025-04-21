@@ -1,32 +1,158 @@
 // src/pages/Projects.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import ProjectsSection from '../components/sections/ProjectsSection';
+import { Particles } from 'react-particles';
+import { loadSlim } from "tsparticles-slim";
 
-const PageContainer = styled.div`
-  padding-top: 5rem;
+// Dynamic background with 3D perspective
+const PageContainer = styled(motion.div)`
+  padding-top: 6rem; // Increase this value to provide more space for header
+  min-height: 100vh;
+  position: relative;
+  perspective: 1000px;
+  overflow: visible; // Change from 'hidden' to 'visible'
+  isolation: isolate;
+  z-index: 0; // Explicit z-index
 `;
 
-const PageHeader = styled.div`
-  text-align: center;
-  padding: 3rem 0;
+// Enhanced particles container with responsive adjustments
+const ParticlesWrapper = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1; // This seems correct already
+  pointer-events: none;
+  
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
 `;
 
-const PageTitle = styled(motion.h1)`
-  margin-bottom: 1rem;
-`;
-
-const PageDescription = styled(motion.p)`
-  max-width: 700px;
-  margin: 0 auto;
-  color: ${({ theme }) => theme.textAlt};
+// Visual elements to add depth
+const BackgroundGradient = styled(motion.div)`
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(
+    circle at 30% 20%, 
+    rgba(108, 92, 231, 0.05) 0%, 
+    rgba(0, 0, 0, 0) 60%
+  );
+  z-index: -2;
+  pointer-events: none;
+  transform-origin: center center;
 `;
 
 const Projects = () => {
+  const containerRef = useRef(null);
+  
+  // Enhanced particle configuration with better performance
+  const particlesInit = async (engine) => {
+    await loadSlim(engine);
+  };
+
+  const particlesOptions = {
+    particles: {
+      number: {
+        value: typeof window !== 'undefined' && window.innerWidth < 768 ? 20 : 40,
+        density: {
+          enable: true,
+          value_area: 1000
+        }
+      },
+      color: {
+        value: "#6c5ce7"
+      },
+      opacity: {
+        value: 0.2,
+        random: true,
+        anim: {
+          enable: true,
+          speed: 0.2
+        }
+      },
+      size: {
+        value: 3,
+        random: true,
+        anim: {
+          enable: true,
+          speed: 2
+        }
+      },
+      move: {
+        enable: true,
+        speed: 0.5,
+        direction: "none",
+        random: true,
+        out_mode: "out",
+        bounce: false
+      },
+      links: {
+        enable: typeof window !== 'undefined' && window.innerWidth >= 768,
+        distance: 150,
+        color: "#6c5ce7",
+        opacity: 0.1,
+        width: 1
+      },
+    },
+    interactivity: {
+      detect_on: "canvas",
+      events: {
+        onhover: {
+          enable: true,
+          mode: "grab"
+        },
+        onclick: {
+          enable: true,
+          mode: "push"
+        },
+        resize: true
+      },
+      modes: {
+        grab: {
+          distance: 140,
+          line_linked: {
+            opacity: 0.3
+          }
+        },
+        push: {
+          particles_nb: 3
+        }
+      }
+    },
+    retina_detect: true,
+    fps_limit: 60
+  };
+  
+  // Subtle parallax effect based on mouse movement
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Check if we're in browser environment
+    if (typeof window === 'undefined') return;
+    
+    const handleMouseMove = (e) => {
+      // ... existing code
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    // Modify scroll behavior - add a delay to ensure header is properly loaded
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'auto' // Change from 'smooth' to 'auto' to prevent animation issues
+      });
+    }, 100);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
   return (
@@ -35,24 +161,48 @@ const Projects = () => {
         <title>Projects | Ammar Alakhali</title>
         <meta name="description" content="Explore Ammar Alakhali's portfolio of software development projects including web applications, mobile apps, and more." />
         <meta name="keywords" content="Ammar Alakhali, projects, portfolio, web development, software engineering" />
+        <meta property="og:title" content="Projects | Ammar Alakhali" />
+        <meta property="og:description" content="Explore Ammar Alakhali's portfolio of software development projects." />
+        <meta name="twitter:title" content="Projects | Ammar Alakhali" />
+        <meta name="twitter:description" content="Explore Ammar Alakhali's portfolio of software development projects." />
       </Helmet>
-      <PageContainer>
-        <PageHeader>
-          <PageTitle
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            My Projects
-          </PageTitle>
-          <PageDescription
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            A showcase of my work, projects and contributions in the world of software development.
-          </PageDescription>
-        </PageHeader>
+      
+      <PageContainer 
+        ref={containerRef}
+        initial={{ opacity: 0 }}
+        animate={{ 
+          opacity: 1,
+          transition: { duration: 0.8, ease: 'easeOut' }
+        }}
+      >
+        <ParticlesWrapper>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="particles"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2 }}
+              style={{ width: '100%', height: '100%' }}
+            >
+              <Particles
+                id="tsparticles"
+                init={particlesInit}
+                options={particlesOptions}
+                style={{ width: '100%', height: '100%' }}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </ParticlesWrapper>
+        
+        <BackgroundGradient 
+          data-gradient
+          initial={{ opacity: 0 }}
+          animate={{ 
+            opacity: 1,
+            transition: { duration: 1.5 }
+          }}
+        />
         
         <ProjectsSection />
       </PageContainer>

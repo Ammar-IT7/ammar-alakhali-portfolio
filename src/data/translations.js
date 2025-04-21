@@ -114,6 +114,7 @@ export const translations = {
     },
     projects: {
       title: "Our Portfolio",
+      subtitle: "Showcasing our latest design work",
       description: "A showcase of our latest design work across various industries and platforms.",
       viewProject: "View Project",
       viewCode: "Case Study",
@@ -124,6 +125,8 @@ export const translations = {
         backend: "Logos"
       },
       searchPlaceholder: "Search for a project...",
+      noResults: "No results found .",
+      adjustSearch: "Try adjusting your search or filter to find what you're looking for.",
     },
     contact: {
       title: "Contact Us",
@@ -287,6 +290,7 @@ export const translations = {
     },
     projects: {
       title: "أعمالنا",
+      subtitle: "عرض أحدث أعمال التصميم لدينا",
       description: "معرض لأحدث أعمال التصميم عبر مختلف الصناعات والمنصات.",
       viewProject: "عرض المشروع",
       viewCode: "دراسة الحالة",
@@ -297,6 +301,8 @@ export const translations = {
         backend: "الشعارات"
       },
       searchPlaceholder: "ابحث عن مشروع...",
+      noResults: "لا توجد نتائج",
+      adjustSearch: "قم بالبحث عن مشروع آخر",
     },
     contact: {
       title: "اتصل بنا",

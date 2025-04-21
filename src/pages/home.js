@@ -1,24 +1,16 @@
 // src/pages/Home.js
 import React, { useEffect, useRef, Suspense, lazy, useState, useCallback, useContext } from 'react';
-import { motion, useScroll, AnimatePresence, useSpring, useTransform, useInView, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion';
 import Hero from '../components/sections/Hero';
 import { Helmet } from 'react-helmet';
-import styled, { keyframes, css } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { LanguageContext } from '../contexts/LanguageContext';
 import { debounce } from 'lodash';
 
 // Lazy load components with named exports for better debugging
-const About = lazy(() => import('../components/sections/AboutSection'));
 const Skills = lazy(() => import('../components/sections/Skills'));
 const Projects = lazy(() => import('../components/sections/ProjectsSection'));
 const Contact = lazy(() => import('../components/sections/ContactSection'));
-
-// Optimized animations with better performance
-const shimmer = keyframes`
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-`;
-
 const progressAnimation = keyframes`
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -639,14 +631,6 @@ const Home = () => {
             initial="hidden"
             animate="visible"
           >
-            <SectionWrapper
-              variants={fadeInVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1, margin: "-100px 0px" }}
-            >
-              <About />
-            </SectionWrapper>
             
             <SectionWrapper
               variants={fadeInVariants}

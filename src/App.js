@@ -1,49 +1,61 @@
 // src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect, useContext, lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { lightTheme, darkTheme } from './styles/Themes';
-import { useState, useEffect, useContext } from 'react';
 import { LanguageProvider, LanguageContext } from './contexts/LanguageContext';
-
-// Pages
-import Home from './pages/Home';
-import About from './pages/About';
-import Projects from './pages/Projects';
-import Contact from './pages/Contact';
-import Resume from './pages/Resume';
 
 // Components
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
+import LoadingSpinner from './components/ui/LoadingSpinner';
+import ErrorBoundary from './components/error/ErrorBoundary';
 
-const Container = styled.div`
+// Lazy-loaded pages for better performance
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Projects = lazy(() => import('./pages/Projects'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Resume = lazy(() => import('./pages/Resume'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+const PageContainer = styled.main`
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem;
+  min-height: calc(100vh - 160px); /* Account for navbar and footer */
 `;
 
 // Wrapper component to access language context
 function AppContent() {
   const { language } = useContext(LanguageContext);
   const [theme, setTheme] = useState(() => 
-    localStorage.getItem('theme') || 'dark'
+    localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   );
   
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
+    document.body.classList.add('theme-transition');
   };
   
   useEffect(() => {
     // Apply theme class to body for additional styling opportunities
     document.body.className = theme;
+    document.body.classList.add('theme-transition');
     
     // Set the dir attribute based on language
     const isRTL = language === 'ar';
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    
+    // Cleanup transition class after animation completes
+    const transitionTimeout = setTimeout(() => {
+      document.body.classList.remove('theme-transition');
+    }, 300);
+    
+    return () => clearTimeout(transitionTimeout);
   }, [theme, language]);
 
   // Create theme with current RTL state
@@ -57,15 +69,21 @@ function AppContent() {
       <GlobalStyles />
       <Router basename="/ammar-alakhali-portfolio">
         <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
-        <Container>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/resume" element={<Resume />} />
-          </Routes>
-        </Container>
+        <ErrorBoundary>
+          <PageContainer>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/resume" element={<Resume />} />
+                <Route path="/404" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/404" replace />} />
+              </Routes>
+            </Suspense>
+          </PageContainer>
+        </ErrorBoundary>
         <Footer />
       </Router>
     </ThemeProvider>
