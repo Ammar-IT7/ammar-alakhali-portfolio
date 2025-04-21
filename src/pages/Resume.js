@@ -193,9 +193,9 @@ const Resume = () => {
   return (
     <>
       <Helmet>
-        <title>{t('resume.title')} | Ammar Alakhali</title>
-        <meta name="description" content="View Ammar Alakhali's professional resume detailing experience, education, and skills as a software engineer." />
-        <meta name="keywords" content="Ammar Alakhali, resume, CV, experience, education, skills, software engineer" />
+        <title>{t('resume.title')} | Enova Studio</title>
+        <meta name="description" content="Enova Studio offers innovative web design, UI/UX, logo design, and app development services." />
+        <meta name="keywords" content="Enova Studio, web design, UI/UX, logo design, app development" />
       </Helmet>
       <PageContainer language={language}>
         <PageHeader>

@@ -184,13 +184,13 @@ const Projects = () => {
   return (
     <>
       <Helmet>
-        <title>Projects | Ammar Alakhali</title>
-        <meta name="description" content="Explore Ammar Alakhali's portfolio of software development projects including web applications, mobile apps, and more." />
-        <meta name="keywords" content="Ammar Alakhali, projects, portfolio, web development, software engineering" />
-        <meta property="og:title" content="Projects | Ammar Alakhali" />
-        <meta property="og:description" content="Explore Ammar Alakhali's portfolio of software development projects." />
-        <meta name="twitter:title" content="Projects | Ammar Alakhali" />
-        <meta name="twitter:description" content="Explore Ammar Alakhali's portfolio of software development projects." />
+        <title>Projects | Enova Studio</title>
+        <meta name="description" content="Enova Studio offers innovative web design, UI/UX, logo design, and app development services." />
+        <meta name="keywords" content="Enova Studio, web design, UI/UX, logo design, app development" />
+        <meta property="og:title" content="Projects | Enova Studio" />
+        <meta property="og:description" content="Explore Enova Studio's portfolio of softwares and designs projects." />
+        <meta name="twitter:title" content="Projects | Enova Studio" />
+        <meta name="twitter:description" content="Explore Enova Studio's portfolio of softwares and designs projects." />
       </Helmet>
       
       <PageContainer 

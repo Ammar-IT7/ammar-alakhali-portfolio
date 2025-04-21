@@ -32,9 +32,9 @@ const Contact = () => {
   return (
     <>
       <Helmet>
-        <title>Contact | Ammar Alakhali</title>
-        <meta name="description" content="Get in touch with Ammar Alakhali for collaborations, job opportunities, or questions about software development projects." />
-        <meta name="keywords" content="Ammar Alakhali, contact, hire, collaboration, software engineer" />
+        <title>Contact | Enova Studio</title>
+        <meta name="description" content="Enova Studio offers innovative web design, UI/UX, logo design, and app development services." />
+        <meta name="keywords" content="Enova Studio, web design, UI/UX, logo design, app development" />
       </Helmet>
       <PageContainer>
         <PageHeader>

@@ -52,9 +52,9 @@ const About = () => {
   return (
     <>
       <Helmet>
-        <title>About Me | Ammar Alakhali</title>
-        <meta name="description" content="Learn more about Ammar Alakhali's background, skills, and experience as a software engineer." />
-        <meta name="keywords" content="Ammar Alakhali, software engineer, full stack, about, skills, experience" />
+        <title>About Us | Enova Studio</title>
+        <meta name="description" content="Enova Studio offers innovative web design, UI/UX, logo design, and app development services." />
+        <meta name="keywords" content="Enova Studio, web design, UI/UX, logo design, app development" />
       </Helmet>
       <PageContainer>
         <BackgroundGradient />

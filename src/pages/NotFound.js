@@ -60,7 +60,7 @@ const NotFound = () => {
   return (
     <NotFoundContainer>
       <Helmet>
-        <title>Page Not Found | Ammar Alakhali</title>
+        <title>Page Not Found | Enova Studio</title>
         <meta name="description" content="The page you are looking for doesn't exist." />
       </Helmet>
       

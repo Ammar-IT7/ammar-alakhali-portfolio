@@ -190,7 +190,7 @@ const Footer = () => {
             variants={item}
             whileHover={{ scale: 1.03 }}
           >
-            {isRTL ? 'عمار الأكحلي' : 'Ammar Alakhali'}
+            {isRTL ? 'إينوفا ستوديو' : 'Enova Studio'}
           </FooterTitle>
           <motion.p variants={item}>{t('about.paragraph1')}</motion.p>
           <SocialLinks 
@@ -228,7 +228,7 @@ const Footer = () => {
               <FaTwitter />
             </SocialIcon>
             <SocialIcon 
-              href="mailto:contact@ammaralakhali.com" 
+              href="mailto:enovastudio.ye@gmail.com" 
               whileHover={{ y: -5, rotate: -5 }}
               whileTap={{ scale: 0.95 }}
               aria-label="Email"
@@ -302,7 +302,7 @@ const Footer = () => {
               whileHover={{ color: "#333" }}
             >
               Email:
-            </motion.span> contact@ammaralakhali.com
+            </motion.span> enovastudio.ye@gmail.com
           </motion.p>
           <motion.p variants={item}>
             <motion.span 
@@ -310,7 +310,7 @@ const Footer = () => {
               whileHover={{ color: "#333" }}
             >
               Location:
-            </motion.span> San Francisco, CA
+            </motion.span> Yemen , Sana`a
           </motion.p>
         </FooterSection>
       </FooterContent>
@@ -319,7 +319,7 @@ const Footer = () => {
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
-        © {currentYear} {isRTL ? 'عمار الأكحلي' : 'Ammar Alakhali'}. {t('footer.rights')}
+        © {currentYear} {isRTL ? 'إينوفا ستوديو' : 'Enova Studio'}. {t('footer.rights')}
       </Copyright>
     </FooterContainer>
   );

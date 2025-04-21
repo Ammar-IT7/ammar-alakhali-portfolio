@@ -236,7 +236,7 @@ const ContactSection = () => {
               </IconContainer>
               <ContactMethodInfo>
                 <ContactMethodTitle>Email</ContactMethodTitle>
-                <ContactMethodValue>contact@ammaralakhali.com</ContactMethodValue>
+                <ContactMethodValue>enovastudio.ye@gmail.com</ContactMethodValue>
               </ContactMethodInfo>
             </ContactMethod>
             
@@ -246,7 +246,7 @@ const ContactSection = () => {
               </IconContainer>
               <ContactMethodInfo>
                 <ContactMethodTitle>Location</ContactMethodTitle>
-                <ContactMethodValue>San Francisco, CA</ContactMethodValue>
+                <ContactMethodValue>Yemen, Sana`a</ContactMethodValue>
               </ContactMethodInfo>
             </ContactMethod>
             
@@ -256,7 +256,7 @@ const ContactSection = () => {
               </IconContainer>
               <ContactMethodInfo>
                 <ContactMethodTitle>Phone</ContactMethodTitle>
-                <ContactMethodValue>+1 (123) 456-7890</ContactMethodValue>
+                <ContactMethodValue>+967 739502156</ContactMethodValue>
               </ContactMethodInfo>
             </ContactMethod>
           </ContactMethods>
