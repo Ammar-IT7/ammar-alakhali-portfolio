@@ -9,15 +9,14 @@ import { loadSlim } from "tsparticles-slim";
 
 // Dynamic background with 3D perspective
 const PageContainer = styled(motion.div)`
-  padding-top: 6rem; // Increase this value to provide more space for header
+  padding-top: 6rem;
   min-height: 100vh;
   position: relative;
   perspective: 1000px;
-  overflow: visible; // Change from 'hidden' to 'visible'
+  overflow: visible; /* This should be 'visible', not 'hidden' */
   isolation: isolate;
-  z-index: 0; // Explicit z-index
+  z-index: 0; 
 `;
-
 // Enhanced particles container with responsive adjustments
 const ParticlesWrapper = styled.div`
   position: absolute;

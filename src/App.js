@@ -67,7 +67,8 @@ function AppContent() {
   return (
     <ThemeProvider theme={currentTheme}>
       <GlobalStyles />
-      <Router basename="/ammar-alakhali-portfolio">
+      {/* <Router basename="/ammar-alakhali-portfolio"> */}
+      <Router basename="/">
         <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
         <ErrorBoundary>
           <PageContainer>
@@ -75,7 +76,7 @@ function AppContent() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
-                {/* <Route path="/projects" element={<Projects />} /> */}
+                <Route path="/projects" element={<Projects />} />
                 <Route path="/contact" element={<Contact />} />
                 {/* <Route path="/resume" element={<Resume />} /> */}
                 <Route path="/404" element={<NotFound />} />

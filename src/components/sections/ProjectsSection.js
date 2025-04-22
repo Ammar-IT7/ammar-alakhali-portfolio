@@ -93,7 +93,8 @@ const ProjectsContainer = styled(motion.section)`
   width: min(92%, 1500px);
   margin: 0 auto;
   position: relative;
-  overflow: visible;
+  overflow: visible; /* Ensure this is 'visible' */
+  z-index: 1; /* Add appropriate z-index */
 `;
 
 // Enhanced background elements with better layering
@@ -256,6 +257,8 @@ const FilterContainer = styled(motion.div)`
   position: relative;
   padding-bottom: 15px;
   width: 100%;
+  z-index: 5;
+  opacity: 1 !important; /* Force opacity */
   
   @media (max-width: 768px) {
     gap: 0.7rem;
@@ -275,11 +278,15 @@ const FilterContainer = styled(motion.div)`
     scroll-padding: 1rem;
     -webkit-overflow-scrolling: touch;
     
-    /* Hide scrollbar but keep functionality */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    /* Make scrollbar visible but subtle for better UX */
+    scrollbar-width: thin;
+    -ms-overflow-style: none;
     &::-webkit-scrollbar {
-      display: none; /* Chrome, Safari, Opera */
+      height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(108, 92, 231, 0.3);
+      border-radius: 4px;
     }
     
     /* Add horizontal padding to create space at edges */
@@ -290,9 +297,9 @@ const FilterContainer = styled(motion.div)`
   }
 `;
 
-// IMPROVED: Enhanced buttons with better responsiveness and layout
+// Update the FilterButton for better visibility
 const FilterButton = styled(motion.button)`
-  background-color: transparent;
+  background-color: ${({ active, theme }) => active ? 'rgba(108, 92, 231, 0.1)' : 'transparent'};
   color: ${({ active, theme }) => active ? (theme.primary || '#6c5ce7') : (theme.text || '#222')};
   border: none;
   border-radius: 30px;
@@ -307,6 +314,8 @@ const FilterButton = styled(motion.button)`
   display: inline-block;
   margin-bottom: 5px; /* Ensure space for indicator */
   white-space: nowrap;
+  z-index: 6; /* Make sure it's above the indicator */
+  opacity: 1; /* Ensure it's visible */
   
   &::before {
     content: '';
@@ -348,7 +357,6 @@ const FilterButton = styled(motion.button)`
   }
 `;
 
-// IMPROVED: Enhanced indicator with better positioning for mobile
 const ActiveIndicator = styled(motion.div)`
   position: absolute;
   bottom: 0;
@@ -356,6 +364,11 @@ const ActiveIndicator = styled(motion.div)`
   background: linear-gradient(to right, ${({ theme }) => theme.primary || '#6c5ce7'}, ${({ theme }) => theme.secondary || '#6c5ce7'});
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+  z-index: 5; /* Make sure this is below the buttons */
+  
+  /* Add this to make it visible for debugging */
+  opacity: 1;
+  pointer-events: none; /* Make sure it doesn't interfere with button clicks */
   
   @media (max-width: 480px) {
     bottom: 12px;
@@ -368,6 +381,7 @@ const SearchContainer = styled(motion.div)`
   position: relative;
   max-width: min(600px, 90%);
   margin: 0 auto clamp(3rem, 6vw, 5rem) auto;
+  opacity: 1 !important; /* Force opacity */
 `;
 
 // Accessible search input with better focus states
@@ -949,6 +963,10 @@ const ProjectsSection = () => {
       
       if (activeButton) {
         const { offsetWidth, offsetLeft } = activeButton;
+        
+        // Log the values to make sure they're correct
+        console.log('Active button dimensions:', { width: offsetWidth, left: offsetLeft });
+        
         setActiveIndicatorWidth(offsetWidth);
         setActiveIndicatorLeft(offsetLeft);
         
@@ -965,22 +983,14 @@ const ProjectsSection = () => {
       }
     };
     
-    // Initial update
-    updateIndicator();
+    // Run this on a slight delay to ensure DOM is ready
+    setTimeout(updateIndicator, 100);
     
-    // Set up a timeout to ensure DOM is fully rendered
-    const timeoutId = setTimeout(updateIndicator, 100);
-    
-    // Add resize listener for responsive layouts
-    const handleResize = () => {
-      updateIndicator();
-    };
-    
-    window.addEventListener('resize', handleResize);
+    // Also run on window resize
+    window.addEventListener('resize', updateIndicator);
     
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', updateIndicator);
     };
   }, [filter]);
 
@@ -1183,59 +1193,57 @@ const ProjectsSection = () => {
 
       {/* IMPROVED: Added ref to filter container for mobile scrolling */}
       <FilterContainer 
-        ref={(el) => {
-          filtersRef.current = el;
-          filterContainerRef.current = el;
-        }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={filtersControls}
-        variants={{
-          visible: { 
-            opacity: 1, 
-            y: 0,
-            transition: { 
-              duration: 0.6,
-              type: "spring",
-              stiffness: 100
-            }
-          },
-          visibleNoAnimation: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.5 }
-          }
-        }}
-      >
-        {['all', 'web', 'mobile', 'backend'].map((category) => (
-          <FilterButton 
-            key={category}
-            active={filter === category} 
-            onClick={() => handleFilterChange(category)}
-            ref={el => filterRefs.current[category] = el}
-            whileHover={{ scale: prefersReducedMotion ? 1 : 1.05 }}
-            whileTap={{ scale: prefersReducedMotion ? 0.98 : 0.95 }}
-            aria-pressed={filter === category}
-          >
-            {safeTranslate(`projects.categories.${category}`, category.charAt(0).toUpperCase() + category.slice(1))}
-          </FilterButton>
-        ))}
-        
-        {/* Active indicator */}
-        {activeIndicatorWidth > 0 && (
-          <ActiveIndicator 
-            initial={false}
-            animate={{ 
-              width: activeIndicatorWidth, 
-              left: activeIndicatorLeft,
-              transition: { 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 30 
-              }
-            }}
-          />
-        )}
-      </FilterContainer>
+  ref={(el) => {
+    filtersRef.current = el;
+    filterContainerRef.current = el;
+  }}
+  initial={{ opacity: 0, y: 20 }}
+  animate={filtersControls}
+  variants={{
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.6,
+        type: "spring",
+        stiffness: 100
+      }
+    },
+    visibleNoAnimation: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  }}
+>
+  {['all', 'web', 'mobile', 'backend'].map((category) => (
+    <FilterButton 
+      key={category}
+      active={filter === category} 
+      onClick={() => handleFilterChange(category)}
+      ref={el => filterRefs.current[category] = el}
+      whileHover={{ scale: prefersReducedMotion ? 1 : 1.05 }}
+      whileTap={{ scale: prefersReducedMotion ? 0.98 : 0.95 }}
+      aria-pressed={filter === category}
+    >
+      {safeTranslate(`projects.categories.${category}`, category.charAt(0).toUpperCase() + category.slice(1))}
+    </FilterButton>
+  ))}
+  
+  {/* Make sure to render the ActiveIndicator without the width check to see if it appears at all */}
+  <ActiveIndicator 
+    initial={false}
+    animate={{ 
+      width: activeIndicatorWidth || 100, // Provide a default width for debugging
+      left: activeIndicatorLeft || 0,
+      transition: { 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 30 
+      }
+    }}
+  />
+</FilterContainer>
 
       {/* Search */}
       <SearchContainer 

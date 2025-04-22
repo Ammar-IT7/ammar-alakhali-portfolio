@@ -1329,7 +1329,7 @@ const Hero = () => {
               whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <StyledLink to="/projects" isRTL={isRTL}>
+              <StyledLink to="/projects">
                 {isRTL ? (
                   <>
                     <FaArrowLeft />
