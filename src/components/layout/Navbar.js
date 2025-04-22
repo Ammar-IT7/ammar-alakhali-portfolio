@@ -829,9 +829,9 @@ const Navbar = ({ toggleTheme, currentTheme }) => {
 
   const navPages = [
     { path: '/', label: t('nav.home'), icon: <FaHome />, badge: null },
-    { path: '/about', label: t('nav.about'), icon: <FaUser />, badge: null },
+    { path: '/about', label: t('nav.about'), icon: <FaUser />, badge: null }, 
+    { path: '/services', label: t('nav.services'), icon: <FaFileAlt />, badge: null },
     { path: '/projects', label: t('nav.projects'), icon: <FaProjectDiagram />, badge: null },
-    // { path: '/resume', label: t('nav.resume'), icon: <FaFileAlt />, badge: null },
     { path: '/contact', label: t('nav.contact'), icon: <FaEnvelope />, badge: { text: t('common.new'), variant: 'new' } }
   ];
 

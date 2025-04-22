@@ -270,14 +270,14 @@ const Footer = () => {
           >
             {t('nav.projects')}
           </FooterLink>
-          {/* <FooterLink 
-            href="/resume" 
+          <FooterLink 
+            href="/services" 
             isRTL={isRTL} 
             variants={item}
             whileHover={{ x: isRTL ? -5 : 5 }}
           >
-            {t('nav.resume')}
-          </FooterLink> */}
+            {t('nav.services')}
+          </FooterLink>
           <FooterLink 
             href="/contact" 
             isRTL={isRTL} 

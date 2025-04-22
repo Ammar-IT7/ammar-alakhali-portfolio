@@ -1,7 +1,7 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import styled, { keyframes, css, ThemeContext } from 'styled-components';
 import { motion, useInView, AnimatePresence, useAnimation, useMotionValue, useTransform } from 'framer-motion';
-import { LanguageContext } from '../../contexts/LanguageContext';
+import { LanguageContext } from '../contexts/LanguageContext';
 import Lottie from 'lottie-react'; // Make sure to install: npm install lottie-react
 import { 
   FaLaptopCode, FaPalette, FaCode, FaChartLine, FaMobileAlt, FaRocket,
@@ -13,12 +13,12 @@ import {
 } from 'react-icons/si';
 
 // Import animations
-import webDesignAnim from '../../assets/animations/web-design.json'; // Replace with actual paths
-import uiUxAnim from '../../assets/animations/ui-ux.json';
-import logoAnim from '../../assets/animations/logo.json';
-import marketingAnim from '../../assets/animations/marketing.json';
-import mobileAnim from '../../assets/animations/mobile.json';
-import ecommerceAnim from '../../assets/animations/ecommerce.json';
+import webDesignAnim from '../assets/animations/web-design.json'; // Replace with actual paths
+import uiUxAnim from '../assets/animations/ui-ux.json';
+import logoAnim from '../assets/animations/logo.json';
+import marketingAnim from '../assets/animations/marketing.json';
+import mobileAnim from '../assets/animations/mobile.json';
+import ecommerceAnim from '../assets/animations/ecommerce.json';
 
 // Background animations
 const gradientBg = keyframes`

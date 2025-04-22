@@ -17,7 +17,7 @@ const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Projects = lazy(() => import('./pages/Projects'));
 const Contact = lazy(() => import('./pages/Contact'));
-const Resume = lazy(() => import('./pages/Resume'));
+const Services = lazy(() => import('./pages/Services'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageContainer = styled.main`
@@ -78,7 +78,7 @@ function AppContent() {
                 <Route path="/about" element={<About />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/contact" element={<Contact />} />
-                {/* <Route path="/resume" element={<Resume />} /> */}
+                <Route path="/services" element={<Services />} />
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>

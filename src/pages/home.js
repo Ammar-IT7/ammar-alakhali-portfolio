@@ -7,7 +7,7 @@ import styled, { keyframes } from 'styled-components';
 import { LanguageContext } from '../contexts/LanguageContext';
 
 // Lazy load components with named exports for better debugging
-const Skills = lazy(() => import('../components/sections/Skills'));
+const Skills = lazy(() => import('./Services'));
 const Projects = lazy(() => import('../components/sections/ProjectsSection'));
 const Contact = lazy(() => import('../components/sections/ContactSection'));
 const progressAnimation = keyframes`
