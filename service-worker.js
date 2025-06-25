@@ -1,6 +1,6 @@
 // public/service-worker.js
 
-const CACHE_NAME = 'ammar-alakhali-portfolio-v1';
+const CACHE_NAME = 'enovastudio-ye-v1';
 const urlsToCache = [
   '/',
   '/index.html',
