@@ -67,7 +67,6 @@ function AppContent() {
   return (
     <ThemeProvider theme={currentTheme}>
       <GlobalStyles />
-      {/* <Router basename="/ammar-alakhali-portfolio"> */}
       <Router basename="/">
         <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
         <ErrorBoundary>

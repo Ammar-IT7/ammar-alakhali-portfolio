@@ -13,20 +13,22 @@ const SEO = () => {
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
-      <meta property="og:url" content="https://enova-studio.com" />
+      <meta property="og:url" content="https://enovastudio-ye.com" />
       <meta property="og:title" content="Enova Studio | Creative Software Solutions" />
       <meta property="og:description" content="Innovative web design, UI/UX, logo design, and app development services." />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content="https://enovastudio-ye.com" />
       <meta name="twitter:title" content="Enova Studio | Creative Software Solutions" />
       <meta name="twitter:description" content="Innovative web design, UI/UX, logo design, and app development services." />
       
       {/* Favicon */}
-      <link rel="icon" href="/favicon.ico" />
+      <link rel="icon" href="%PUBLIC_URL%/favicon.ico?v=2" />
+      <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png?v=2" />
       
       {/* Canonical URL */}
-      <link rel="canonical" href="https://enova-studio.com" />
+      <link rel="canonical" href="https://enovastudio-ye.com" />
     </Helmet>
   );
 };
